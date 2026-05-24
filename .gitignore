@@ -1,0 +1,64 @@
+# ========== 操作系统 ==========
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========== IDE ==========
+.idea/
+.vscode/
+*.iml
+*.suo
+*.swp
+*.swo
+
+# ========== Node / 前端 ==========
+node_modules/
+dist/
+.vite/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env.local
+.env.*.local
+
+# ========== Java / 后端 ==========
+target/
+*.class
+*.jar
+*.war
+*.ear
+.mvn/
+mvnw
+mvnw.cmd
+HELP.md
+*.log
+
+# ========== Spring Boot ==========
+application-local.yml
+application-local.properties
+
+# ========== 数据库 / 敏感配置 ==========
+*.sql.bak
+.env
+secret.yml
+secrets/
+
+# ========== 上传的音频文件 ==========
+# 业务上传的音频不进仓库
+uploads/
+storage/
+*.flac
+*.mp3
+*.wav
+*.aac
+*.m4a
+*.ogg
+
+# ========== Docker ==========
+.docker/
+
+# ========== 临时文件 ==========
+tmp/
+temp/
+*.tmp
