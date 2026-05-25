@@ -48,6 +48,10 @@ knife4j:
       name: Soundprint API
       locations: classpath:markdown/*
 
+springdoc:
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+
 # ========== Soundprint 业务配置 ==========
 soundprint:
   storage:

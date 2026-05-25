@@ -1,0 +1,47 @@
+// 设计令牌 + Element-Plus 主题覆盖（Element-Plus 自身的 CSS 在 main.ts 里 import）
+@import './tokens.scss';
+@import './element-overrides.scss';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// 全局基础样式
+html, body, #app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg-base);
+  color: var(--color-fg-primary);
+  font-family: 'Inter', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+// 自定义滚动条
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+// 全局动效类
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s var(--ease);
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}

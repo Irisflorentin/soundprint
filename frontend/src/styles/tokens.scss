@@ -1,0 +1,41 @@
+:root {
+  // 颜色变量（与 Tailwind 同步）
+  --color-bg-base: #0A0A14;
+  --color-bg-card: #0F0F1E;
+  --color-bg-hover: #1A1530;
+  --color-border: #25204060;
+
+  --color-brand: #7C3AED;
+  --color-brand-hover: #8B5CF6;
+  --color-accent: #06B6D4;
+
+  --color-fg-primary: #F5F5F7;
+  --color-fg-secondary: #A1A1AA;
+  --color-fg-tertiary: #71717A;
+
+  // 间距系统（8 的倍数）
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-8: 48px;
+  --space-10: 64px;
+
+  // 圆角
+  --radius-card: 16px;
+  --radius-btn: 12px;
+  --radius-pill: 999px;
+
+  // 阴影
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --shadow-glow: 0 0 24px rgba(124, 58, 237, 0.4);
+
+  // 渐变（品牌渐变，文字/Logo 用）
+  --brand-gradient: linear-gradient(135deg, #7C3AED 0%, #06B6D4 100%);
+
+  // 动效
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-base: 300ms;
+}
