@@ -266,3 +266,58 @@ Soundprint/
 - ❌ 不要在没说清楚的情况下大规模重构已有代码
 - ❌ 不要在业务核心组件里塞 vue-bits 动效（用错地方）
 - ❌ 不要去掉 vue-bits 组件文件顶部的版权注释
+
+---
+
+# 🛠 开发命令与已实现架构（Phase 0–3 实测补充）
+
+> 本节由 `/init` 生成，记录实际跑起来后的命令与代码约定，供后续 Claude 实例快速上手。
+> 上面的章节是项目宪章（写在编码前）；本节是落地后的"操作手册"。
+
+## 环境关键约定（不看会踩坑）
+
+- **MySQL 8.0 跑在 3307 端口**（不是 3306！3306 被另一个 MySQL 9.4 实例占用）。服务名 `MySQL80`。
+- **`application-dev.yml` 不在仓库里**（已 gitignore），含数据库明文密码，需本地手动创建/填写。JDBC url 用 `characterEncoding=UTF-8`（**不是** `utf8mb4`，那是 MySQL 端字符集名，JDBC 不认）。
+- **文件存储根目录 `D:/soundprint-storage/`**（在仓库外），下含 `audio/cover/avatar/conversion/temp`。数据库只存**相对路径**（如 `audio/xxx.flac`），运行时由 `FileStorageUtil` 拼绝对路径。
+- Maven 本地仓库 `C:/MavenRepo` + 阿里云镜像（配在 `~/.m2/settings.xml`）。Maven 3.9.16 / JDK 17。
+- **Windows PowerShell 粘贴长命令会被自动断行**导致参数丢失——长 `mvn` 命令写进 `.ps1` 脚本再跑。
+
+## 常用命令（在 `backend/` 目录执行）
+
+```powershell
+mvn clean compile          # 编译（验证改动最快的方式）
+mvn spring-boot:run        # 启动后端 → http://localhost:8080
+mvn clean package          # 打包（产物 target/soundprint-backend.jar）
+mvn test                   # 跑测试（注意：目前尚无测试类）
+mvn test -Dtest=类名#方法名  # 跑单个测试（将来有测试时）
+```
+
+启动后入口：Knife4j 文档 `http://localhost:8080/doc.html`、健康检查 `/api/health`。
+后端是长驻进程，重新编译前要先停：按端口杀进程
+`Get-NetTCPConnection -LocalPort 8080 -State Listen | %{ Stop-Process -Id $_.OwningProcess -Force }`。
+
+## 仓库外的辅助脚本（密码交互，不进 git）
+
+- `D:\Claude_Playground\run-phase1-sql.ps1` —— 建库+建表+种子（执行 `docs/sql/01~03`），运行时 `Read-Host` 安全读密码。
+- `D:\Claude_Playground\run-generator.ps1` —— 跑 MyBatis-Plus 代码生成器（`com.soundprint.util.CodeGenerator`）。⚠️ 会**覆盖** `entity/mapper/service/controller`；中间表实体和 `TrackController` 已手工改过，重跑后需重新应用那些改动，谨慎。
+
+## 已实现的后端架构与约定（大图景）
+
+- **分层**：`Controller → Service(MyBatis-Plus IService/ServiceImpl) → Mapper(BaseMapper) → MySQL`。聚合类服务（`DashboardService`/`StatsService`）是无实体的纯 `@Service`。
+- **统一响应**：所有接口返回 `common/Result<T>`（code/message/data/timestamp），分页再套 `common/PageResult<T>`。异常统一走 `exception/GlobalExceptionHandler`（`@RestControllerAdvice`），业务错误抛 `BusinessException` / `ResourceNotFoundException`。
+- **DTO 边界**：Controller 收 `dto/request/<域>/*Request`、返 `dto/response/*Response`；**Entity 不出 Service 层**。Response 用静态 `from(entity...)` 工厂方法手工转换（不引 MapStruct）。
+- **软删除 vs 硬删除**：业务实体（user/artist/album/track/playlist）带 `@TableLogic is_deleted`，MP 查询自动加 `is_deleted=0`；中间表（playlist_track/track_tag/user_favorite）**硬删**；行为表（play_history/conversion_task）**不删**。软删 album/artist 时代码**手动**把引用它的 `album_id/artist_id` 置空（软删不触发 FK 的 SET NULL）。
+- **复合主键中间表**：MP 只允许一个 `@TableId`，所以保留列标 `@TableId(type=IdType.INPUT)`、另一列改 `@TableField`。**这些表禁止用 getById/updateById/removeById**，一律用 `LambdaQueryWrapper` 按两列定位。
+- **审计字段自动填充**：`config/MybatisMetaObjectHandler` 负责 `created_at/updated_at` 自动写值——`@TableField(fill=...)` 注解必须配它才生效，否则 insert 报 `created_at cannot be null`。
+- **防 N+1**：需要带关联名字的列表/详情用手写 JOIN（`mapper/TrackMapper.xml`：`pageWithRelations`、`listByAlbum/Artist/Playlist`、`pageByFavorite`）。统计聚合全部在 SQL 里做（`mapper/StatsMapper.xml`，`GROUP BY` 用 SELECT 别名以避开 MySQL `only_full_group_by`），不在 Java 内存里 group。
+- **分页**：MP `Page` + `PaginationInnerInterceptor`（注册在 `MybatisPlusConfig`）。自定义 JOIN 分页查询把 `IPage` 作为 Mapper 参数传入，拦截器自动补 LIMIT/COUNT。
+- **当前用户**：临时用 `util/CurrentUserUtil`，读配置 `soundprint.current-user-id`（=1）。所有按用户过滤的查询都走它；Phase 4 接登录后改为从 SecurityContext 取，调用方不动。
+- **流式播放**：`StreamController` 用 `ResourceRegion` + HTTP Range（206 Partial Content，1MB/块）。种子曲目 `file_path` 是占位、文件不存在，`/api/stream/{种子id}` 返回 404 属预期；上传的真文件才能播。
+- **格式转换**：Phase 3 用 `CompletableFuture.runAsync` 后台线程**模拟**进度并复制源文件产出成品（占位）；Phase 5 改为 `ProcessBuilder` 调真 FFmpeg。
+- **API 文档**：Controller 上的 `@Tag`/`@Operation` 注解驱动 Knife4j `/doc.html`。
+
+## 工作流
+
+- 任务以"架构师"的阶段文档驱动（仓库根目录 `Phase-N-*.md`）。Phase 0 环境 / 1 数据库 / 2 后端骨架 / 3 后端业务接口 **已完成**；Phase 4 = 前端骨架。
+- `dev-notes.md` 持续记录设计决策、踩坑、答辩问答，最终汇入实验报告。
+- 小步提交（每模块一 commit，中文消息），尾部带 `Co-Authored-By` 行；推送听用户的。
