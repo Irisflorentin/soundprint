@@ -8,6 +8,7 @@ import PageHeader from '@/components/common/PageHeader.vue';
 import LoadingBlock from '@/components/common/LoadingBlock.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 import GlassCard from '@/components/common/GlassCard.vue';
+import SmartCover from '@/components/common/SmartCover.vue';
 import { trackApi } from '@/api/track';
 import { favoriteApi } from '@/api/favorite';
 import type { Track } from '@/types/track';
@@ -73,7 +74,8 @@ function handleSizeChange(nextSize: number) {
 }
 
 function play(track: Track) {
-  playerStore.play(track);
+  const index = tracks.value.findIndex((item) => item.id === track.id);
+  playerStore.playTrack(track, tracks.value, index);
 }
 
 async function toggleFavorite(track: Track) {
@@ -229,9 +231,11 @@ onMounted(() => {
         >
           <el-table-column width="72">
             <template #default="{ row }">
-              <div
+              <SmartCover
+                :src="row.coverUrl || row.albumCoverUrl"
+                :alt="row.title"
+                :fallback-text="row.title"
                 class="table-cover"
-                :style="(row.coverUrl || row.albumCoverUrl) ? { backgroundImage: `url(${row.coverUrl || row.albumCoverUrl})` } : undefined"
               />
             </template>
           </el-table-column>
@@ -342,10 +346,6 @@ onMounted(() => {
   width: 44px;
   height: 44px;
   border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(124, 58, 237, 0.82), rgba(6, 182, 212, 0.68));
-  background-position: center;
-  background-size: cover;
 }
 
 .track-title {

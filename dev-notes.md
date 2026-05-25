@@ -10,7 +10,7 @@
 - Phase 2（后端骨架）：2026-05-25 完成
 - Phase 3（后端业务）：2026-05-25 完成
 - Phase 4（前端骨架）：2026-05-26 完成（Codex 接力实现，Claude 审计 + 收藏补漏）
-- Phase 5（播放器+转换）：待开始
+- Phase 5（播放器+转换）：2026-05-26 完成（Codex 实现，待 Claude 审计）
 - Phase 6（统计可视化）：待开始
 - Phase 7（视觉精修）：待开始
 - Phase 8（部署+报告）：待开始
@@ -67,6 +67,10 @@ WHERE is_deleted = 0。物理删除（包括磁盘文件清理）由后台任务
 
 - **2026-05-26 · 前端实际版本高于课程文档（Vite 8 / TS 6）**：`npm create vite@latest` 生成的是 Vite 8 + TypeScript 6 + Vue 3.5，而 CLAUDE.md/文档写的是 Vite 5 / TS 5。决定**保持不降级**——功能等价，且 **Tailwind 已锁 3.x**（vue-bits 兼容的关键项才是真正重要的）。代价：TS 6 对部分编译选项更严，`tsconfig.app.json` 加了 `"ignoreDeprecations": "6.0"` 才能过 `vue-tsc -b` 构建。答辩说辞："脚手架默认就是最新 Vite/TS，主版本号不影响技术栈本质，按需锁定的是 Tailwind 3 以兼容 vue-bits。"
 - **2026-05-26 · 列表收藏状态需 JOIN 才能拿到**：`TrackResponse`（列表 DTO）原本没有收藏状态，音乐库无法显示心形。解决：`pageWithRelations` 加 `LEFT JOIN user_favorite uf ON uf.track_id=t.id AND uf.user_id=#{userId}`，SELECT `(uf.user_id IS NOT NULL) AS favorited`，前端据此渲染可切换心形。避免了"前端造假状态"。
+- **2026-05-26 · @Async 不能在同一个类里自调用**：Phase 5 转换任务需要提交后立刻返回、后台跑 FFmpeg。直接在 `ConversionTaskServiceImpl` 里调用本类 `@Async` 方法会绕过 Spring 代理，异步不生效。解决：拆出 `ConversionExecutionService`，由提交服务调用另一个 Bean 的 `@Async executeConversion`，保证转换在线程池中执行。
+- **2026-05-26 · FFmpeg 进度来自 stderr 而不是 stdout**：FFmpeg 的 `Duration` 和 `time=` 进度行输出在错误流。`FFmpegRunner` 用 `ProcessBuilder.redirectErrorStream(true)` 合并输出后按正则解析，总时长做分母、当前 `time=` 做分子，得到 0-100 进度。命令使用参数数组，不拼 shell 字符串，避免空格路径和命令注入。
+- **2026-05-26 · wavesurfer 只画波形，不负责播放**：全局播放只允许 Pinia player store 里的单例 `HTMLAudioElement` 负责，wavesurfer 只 `load('/api/stream/{id}')` 做波形渲染和点击 seek。缺点是音频会被请求两次；好处是不会出现多个播放器同时播放、状态不同步的问题。
+- **2026-05-26 · Phase 5 真实转换验证物证**：用 FFmpeg 生成 2 秒测试 MP3，经 `/api/tracks/upload` 上传为 trackId=32，再提交 `/api/conversions` 转 WAV，taskId=4 最终 `SUCCESS/100`，下载文件 352878 bytes，`ffprobe` 识别 `format_name=wav`、`duration=2.000000`。
 - **2026-05-25 · @TableField(fill) 不配 MetaObjectHandler 等于没填**：实体上标了 `@TableField(fill = FieldFill.INSERT)` 的 `created_at`，插入时仍报 `Column 'created_at' cannot be null`。原因：fill 注解只是声明意图，MyBatis-Plus 真正写值要实现一个 `MetaObjectHandler` Bean，代码生成器只加了注解没生成 handler。解决：新增 `MybatisMetaObjectHandler`，在 `insertFill/updateFill` 里用 `strictInsertFill/strictUpdateFill` 填 createdAt/updatedAt。坑的隐蔽点：中间表（playlist_track 等）的时间字段是手动 set 的，不依赖 fill，所以前面测试一直没暴露，直到第一个走 fill 的 insert（转换任务）才炸。
 - **2026-05-25 · MySQL only_full_group_by 严格模式**：热力图 SQL `SELECT DATE_FORMAT(played_at,'%Y-%m-%d') ... GROUP BY DATE(played_at)` 报错 `not functionally dependent ... incompatible with sql_mode=only_full_group_by`。原因：MySQL 8 默认开启 only_full_group_by，SELECT 里的非聚合列必须能被 GROUP BY 列推导出来，而 `DATE_FORMAT(...)` 和 `DATE(...)` 被视为不同表达式。解决：GROUP BY 改用 SELECT 的别名（`GROUP BY date`），与月度趋势查询保持一致写法。
 - **2026-05-25 · 中间表复合主键炸了 MyBatis-Plus**：`playlist_track`、`track_tag`、`user_favorite` 三张中间表用的是联合主键（两列），代码生成器给两列都打了 `@TableId`，启动时报 `@TableId can't more than one in Class`。MP 的 `BaseMapper`（getById/updateById 等）只支持单主键。解决：每张表只保留一个 `@TableId(type = IdType.INPUT)`（INPUT = 值由业务插入，非自增），另一列改 `@TableField`。不动数据库的联合主键，中间表的增删改用自定义查询处理。
@@ -117,6 +121,19 @@ WHERE is_deleted = 0。物理删除（包括磁盘文件清理）由后台任务
 8. TS 类型严格对齐后端 DTO（不为 UI 造假字段；列表收藏状态靠 SQL JOIN 真实返回）
 9. 磨砂玻璃 `backdrop-filter: blur` 统一封装进 GlassCard 组件
 10. 工程协作：Claude 搭骨架(段1-2) → Codex 接力完成页面 → Claude 审计补漏，体现可交接性
+
+### Phase 5 完成的可讲技术点（播放器 + 转换）
+
+1. 静态文件服务：`WebMvcConfig` 将 `D:/soundprint-storage/` 映射到 `/files/**`，封面图由 `SmartCover + fileUrl()` 统一访问并失败回退。
+2. 全局单例播放器：Pinia player store 持有唯一 `HTMLAudioElement`，统一播放状态、队列、进度、音量和历史上报。
+3. 播放队列：列表页调用 `playTrack(track, queue, index)`，底栏上一首/下一首/单曲循环/列表循环都基于同一队列。
+4. 音量持久化：`localStorage` 保存音量偏好，刷新页面后不重置。
+5. wavesurfer.js：只负责波形渲染和点击定位，不作为第二个播放器。
+6. LRC 歌词同步：正则解析 `[mm:ss.xx]歌词`，按当前播放秒数计算高亮行并自动滚动。
+7. FFmpeg 集成：`ProcessBuilder` 参数数组调用系统 FFmpeg，解析 `Duration` 与 `time=` 进度。
+8. 异步转换：`@EnableAsync + @Async` 让耗时转换在后台线程执行，Controller 立即返回任务 id。
+9. 轮询进度：前端转换工坊每 0.8 秒查询任务状态，短任务足够简单稳定，暂不引入 WebSocket/SSE。
+10. 歌单拖拽排序：`vuedraggable@next` 管 UI 顺序，释放后调用后端 `PUT /api/playlists/{id}/reorder` 持久化。
 
 ## ❓ 答辩可能被问到的问题与回答
 

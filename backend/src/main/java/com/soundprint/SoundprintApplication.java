@@ -3,6 +3,7 @@ package com.soundprint;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
  * Soundprint 主启动类
@@ -11,6 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 @SpringBootApplication
 @MapperScan("com.soundprint.mapper")
+@EnableAsync
 public class SoundprintApplication {
 
     public static void main(String[] args) {

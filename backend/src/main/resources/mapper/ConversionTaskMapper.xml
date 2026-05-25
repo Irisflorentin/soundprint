@@ -25,4 +25,10 @@
         id, user_id, source_track_id, source_format, target_format, target_bitrate, target_sample_rate, status, progress, output_path, error_message, created_at, started_at, finished_at
     </sql>
 
+    <update id="updateProgress">
+        UPDATE conversion_task
+        SET progress = #{progress}
+        WHERE id = #{taskId}
+    </update>
+
 </mapper>

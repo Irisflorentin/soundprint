@@ -6,6 +6,7 @@ import PageHeader from '@/components/common/PageHeader.vue';
 import LoadingBlock from '@/components/common/LoadingBlock.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 import GlassCard from '@/components/common/GlassCard.vue';
+import SmartCover from '@/components/common/SmartCover.vue';
 import { albumApi } from '@/api/album';
 import type { Album } from '@/types/album';
 
@@ -69,12 +70,12 @@ onMounted(loadAlbums);
         class="album-card"
         @click="router.push(`/albums/${album.id}`)"
       >
-        <div
+        <SmartCover
+          :src="album.coverUrl"
+          :alt="album.title"
+          :fallback-text="album.title"
           class="cover"
-          :style="album.coverUrl ? { backgroundImage: `url(${album.coverUrl})` } : undefined"
-        >
-          <span v-if="!album.coverUrl">{{ album.title.slice(0, 1) }}</span>
-        </div>
+        />
         <div class="body">
           <strong>{{ album.title }}</strong>
           <span>{{ album.artistName || '未知艺术家' }}</span>
@@ -110,15 +111,6 @@ onMounted(loadAlbums);
 
 .cover {
   aspect-ratio: 1;
-  display: grid;
-  place-items: center;
-  color: var(--color-fg-primary);
-  font-size: 42px;
-  font-weight: 800;
-  background:
-    linear-gradient(135deg, rgba(124, 58, 237, 0.8), rgba(6, 182, 212, 0.68));
-  background-position: center;
-  background-size: cover;
 }
 
 .body {

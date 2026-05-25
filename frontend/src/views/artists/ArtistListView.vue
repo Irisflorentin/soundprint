@@ -6,6 +6,7 @@ import PageHeader from '@/components/common/PageHeader.vue';
 import LoadingBlock from '@/components/common/LoadingBlock.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 import GlassCard from '@/components/common/GlassCard.vue';
+import SmartCover from '@/components/common/SmartCover.vue';
 import { artistApi } from '@/api/artist';
 import type { Artist } from '@/types/artist';
 
@@ -69,12 +70,13 @@ onMounted(loadArtists);
         class="artist-card"
         @click="router.push(`/artists/${artist.id}`)"
       >
-        <div
+        <SmartCover
+          :src="artist.avatarUrl"
+          :alt="artist.name"
+          :fallback-text="artist.name"
+          rounded="circle"
           class="avatar"
-          :style="artist.avatarUrl ? { backgroundImage: `url(${artist.avatarUrl})` } : undefined"
-        >
-          <span v-if="!artist.avatarUrl">{{ artist.name.slice(0, 1) }}</span>
-        </div>
+        />
         <strong>{{ artist.name }}</strong>
         <span>{{ artist.country || '未知地区' }}</span>
         <small>{{ artist.formedYear ? `${artist.formedYear} 出道/成立` : '年份未知' }}</small>
@@ -116,15 +118,6 @@ onMounted(loadArtists);
   height: 88px;
   margin-bottom: var(--space-4);
   border-radius: 50%;
-  display: grid;
-  place-items: center;
-  color: var(--color-fg-primary);
-  font-size: 34px;
-  font-weight: 800;
-  background:
-    linear-gradient(135deg, rgba(124, 58, 237, 0.78), rgba(6, 182, 212, 0.62));
-  background-position: center;
-  background-size: cover;
 }
 
 strong,

@@ -15,4 +15,5 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface ConversionTaskMapper extends BaseMapper<ConversionTask> {
 
+    void updateProgress(Long taskId, Integer progress);
 }

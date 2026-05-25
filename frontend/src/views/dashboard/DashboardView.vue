@@ -6,6 +6,7 @@ import PageHeader from '@/components/common/PageHeader.vue';
 import LoadingBlock from '@/components/common/LoadingBlock.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 import GlassCard from '@/components/common/GlassCard.vue';
+import SmartCover from '@/components/common/SmartCover.vue';
 import HorizontalShelf from '@/components/shelf/HorizontalShelf.vue';
 import { dashboardApi } from '@/api/dashboard';
 import type { Dashboard } from '@/types/dashboard';
@@ -30,8 +31,9 @@ async function loadDashboard() {
   }
 }
 
-function playTrack(track: Track) {
-  playerStore.play(track);
+function playTrack(track: Track, queue: Track[]) {
+  const index = queue.findIndex((item) => item.id === track.id);
+  playerStore.playTrack(track, queue, index);
 }
 
 function cardCover(track: Track | PlayHistoryItem) {
@@ -78,11 +80,16 @@ onMounted(loadDashboard);
           hoverable
           padding="none"
           class="track-card"
-          @click="playTrack(track)"
+          @click="playTrack(track, dashboard.recentTracks)"
         >
-          <div class="cover" :style="cardCover(track) ? { backgroundImage: `url(${cardCover(track)})` } : undefined">
+          <SmartCover
+            :src="cardCover(track)"
+            :alt="track.title"
+            :fallback-text="track.title"
+            class="cover"
+          >
             <el-icon class="play-icon"><VideoPlay /></el-icon>
-          </div>
+          </SmartCover>
           <div class="card-body">
             <strong>{{ track.title }}</strong>
             <span>{{ track.artistName || '未知艺术家' }}</span>
@@ -100,7 +107,12 @@ onMounted(loadDashboard);
           class="track-card"
           @click="router.push('/library')"
         >
-          <div class="cover" :style="cardCover(item) ? { backgroundImage: `url(${cardCover(item)})` } : undefined" />
+          <SmartCover
+            :src="cardCover(item)"
+            :alt="item.title"
+            :fallback-text="item.title"
+            class="cover"
+          />
           <div class="card-body">
             <strong>{{ item.title }}</strong>
             <span>{{ item.artistName || '未知艺术家' }}</span>
@@ -116,11 +128,16 @@ onMounted(loadDashboard);
           hoverable
           padding="none"
           class="track-card"
-          @click="playTrack(track)"
+          @click="playTrack(track, dashboard.favorites)"
         >
-          <div class="cover" :style="cardCover(track) ? { backgroundImage: `url(${cardCover(track)})` } : undefined">
+          <SmartCover
+            :src="cardCover(track)"
+            :alt="track.title"
+            :fallback-text="track.title"
+            class="cover"
+          >
             <el-icon class="play-icon"><VideoPlay /></el-icon>
-          </div>
+          </SmartCover>
           <div class="card-body">
             <strong>{{ track.title }}</strong>
             <span>{{ track.artistName || '未知艺术家' }}</span>
@@ -139,7 +156,12 @@ onMounted(loadDashboard);
               class="mini-item"
               @click="router.push(`/albums/${album.id}`)"
             >
-              <span class="mini-cover" />
+              <SmartCover
+                :src="album.coverUrl"
+                :alt="album.title"
+                :fallback-text="album.title"
+                class="mini-cover"
+              />
               <span>
                 <strong>{{ album.title }}</strong>
                 <small>{{ album.artistName || album.genre || '未知艺术家' }}</small>
@@ -157,7 +179,13 @@ onMounted(loadDashboard);
               class="mini-item"
               @click="router.push(`/artists/${artist.id}`)"
             >
-              <span class="avatar">{{ artist.name.slice(0, 1) }}</span>
+              <SmartCover
+                :src="artist.avatarUrl"
+                :alt="artist.name"
+                :fallback-text="artist.name"
+                rounded="circle"
+                class="avatar"
+              />
               <span>
                 <strong>{{ artist.name }}</strong>
                 <small>{{ artist.country || '未知地区' }}</small>
@@ -242,10 +270,6 @@ onMounted(loadDashboard);
 .cover {
   position: relative;
   aspect-ratio: 1;
-  background:
-    linear-gradient(135deg, rgba(124, 58, 237, 0.85), rgba(6, 182, 212, 0.72));
-  background-position: center;
-  background-size: cover;
 
   .play-icon {
     position: absolute;
@@ -353,11 +377,6 @@ onMounted(loadDashboard);
   height: 42px;
   flex: 0 0 42px;
   border-radius: 10px;
-  display: grid;
-  place-items: center;
-  color: var(--color-fg-primary);
-  font-weight: 700;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.72), rgba(6, 182, 212, 0.62));
 }
 
 .avatar {

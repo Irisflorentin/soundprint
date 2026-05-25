@@ -19,6 +19,6 @@ export interface ConversionTask {
 export interface ConversionSubmit {
   sourceTrackId: number;
   targetFormat: string;
-  targetBitrate?: number;
-  targetSampleRate?: number;
+  targetBitrate?: number | null;
+  targetSampleRate?: number | null;
 }
