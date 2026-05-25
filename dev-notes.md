@@ -7,7 +7,7 @@
 
 - Phase 0（初始化）：2026-05-24 完成
 - Phase 1（数据库设计）：2026-05-24 完成
-- Phase 2（后端骨架）：待开始
+- Phase 2（后端骨架）：2026-05-25 完成
 - Phase 3（后端业务）：待开始
 - Phase 4（前端业务）：待开始
 - Phase 5（播放器+转换）：待开始
@@ -65,6 +65,10 @@ WHERE is_deleted = 0。物理删除（包括磁盘文件清理）由后台任务
 
 （按时间倒序记录）
 
+- **2026-05-25 · 中间表复合主键炸了 MyBatis-Plus**：`playlist_track`、`track_tag`、`user_favorite` 三张中间表用的是联合主键（两列），代码生成器给两列都打了 `@TableId`，启动时报 `@TableId can't more than one in Class`。MP 的 `BaseMapper`（getById/updateById 等）只支持单主键。解决：每张表只保留一个 `@TableId(type = IdType.INPUT)`（INPUT = 值由业务插入，非自增），另一列改 `@TableField`。不动数据库的联合主键，中间表的增删改用自定义查询处理。
+- **2026-05-25 · JDBC characterEncoding 填错**：连接串里写了 `characterEncoding=utf8mb4`，启动报 `Unsupported character encoding 'utf8mb4'`。原因：该参数要的是 **Java 字符集名**（`UTF-8`），`utf8mb4` 是 MySQL 服务端字符集名，两者不能混。改成 `UTF-8` 后，配合服务器的 utf8mb4 即可正确存 4 字节字符。
+- **2026-05-25 · Maven 注解处理器路径缺版本号**：pom 里给 Lombok 配 `annotationProcessorPaths` 但没写 `<version>`，Maven 3.9.16 + compiler-plugin 3.11.0 不会自动从父 POM 继承，报 `version can neither be null...`。解决：补 `<version>${lombok.version}</version>`（引用 Spring Boot 父 POM 已定义的属性，不自己挑版本）。
+- **2026-05-25 · PowerShell 粘贴长命令被断行**：`mvn ... -Dexec.mainClass=...` 多 token 长命令粘进 PowerShell 被自动拆成多行执行，导致参数丢失。解决：把命令写进 `.ps1` 脚本文件，用一条短命令运行，彻底避开粘贴断行。
 - **2026-05-24 · MySQL 端口非默认**：开发机装了 MySQL 8.0（服务 MySQL80）和 9.4（服务 MySQL94）两个实例。8.0 实例端口被设为 **3307**（默认 3306 被 9.4 占用）。后端 application.yml 连接务必用 3307。
 - **2026-05-24 · 环境备忘**：Maven 3.6.1 偏低，Spring Boot 3.2 需 ≥3.6.3，Phase 2 前需升级至 3.9.x。
 
@@ -82,6 +86,20 @@ WHERE is_deleted = 0。物理删除（包括磁盘文件清理）由后台任务
 6. 行为表与实体表分离（play_history、conversion_task 与 track 解耦）
 7. 索引设计：B+ 树索引在外键 + 业务高频查询字段
 8. 时区统一为 +08:00
+
+### Phase 2 完成的可讲技术点
+
+1. Spring Boot 自动配置 + 起步依赖（约定大于配置）
+2. 分层架构 Controller → Service → Mapper → DB（单一职责、可测试）
+3. MyBatis-Plus 代码生成器：11 张表一次性生成 Entity/Mapper/Service
+4. 统一响应封装 Result<T>：前后端契约一致
+5. 全局异常处理 @RestControllerAdvice（AOP 横切，用户永远拿到友好提示）
+6. MyBatis-Plus 分页插件 PaginationInnerInterceptor（物理分页，非内存分页）
+7. CORS 跨域配置（解决 5173→8080 同源策略限制）
+8. Knife4j 在线 API 文档（前端没写也能测后端）
+9. Lombok 编译期注解处理 + 构造器注入（@RequiredArgsConstructor）
+10. 多环境配置隔离（profiles dev/prod）+ HikariCP 连接池
+11. 软删除全局生效（logic-delete-field 配置 + 实体 @TableLogic，查询自动加 is_deleted=0）
 
 ## ❓ 答辩可能被问到的问题与回答
 
@@ -116,3 +134,39 @@ A: 业务实体用软删除，关系表用硬删除。理由：
 A: MySQL 的 utf8 实际上是 utf8mb3，最多 3 字节，无法表示完整 Unicode
 （如 4 字节的 emoji 和部分生僻字）。utf8mb4 是真正的 UTF-8，4 字节完整。
 音乐元数据国际化程度高，日文歌、希腊语标题都要支持，必须用 utf8mb4。
+
+### Q: @SpringBootApplication 这一个注解做了什么？
+
+A: 它是三个注解的合体：@Configuration（本身是配置类）、
+@EnableAutoConfiguration（自动配置：发现 classpath 有 spring-web 就自动配
+Tomcat，有 mysql 驱动就自动配数据源）、@ComponentScan（扫描本包及子包的
+@Controller/@Service/@Component 并注册成 Bean）。体现 Spring Boot
+"约定大于配置"的核心思想，省去传统 Spring 的大量 XML。
+
+### Q: 为什么要分 Controller / Service / Mapper 三层？能不能在 Controller 里直接写 SQL？
+
+A: 不能（不应该）。分层是单一职责：Controller 只管 HTTP 收发和参数校验，
+Service 管业务逻辑和事务，Mapper 管数据访问。好处是逻辑可复用（一个业务方法
+多个接口共用）、可单独测试、改一层不影响其他层。Controller 直接写 SQL 会
+导致业务逻辑散落、无法复用、难维护。
+
+### Q: 项目用 MyBatis-Plus，它和原生 MyBatis、JPA 区别在哪？为什么选它？
+
+A: MP 是 MyBatis 的增强。原生 MyBatis 连单表 CRUD 都要手写 SQL；JPA 把 SQL
+完全藏起来（面向对象，但复杂查询难控）。MP 折中：单表增删改查由内置 BaseMapper
+零 SQL 完成，复杂查询仍可写 XML/注解 SQL。课程要求"会写 SQL"，MP 既省样板
+又保留手写 SQL 的能力，比 JPA 更合适。
+
+### Q: 前端调后端为什么会跨域？怎么解决的？
+
+A: 浏览器的同源策略：协议/域名/端口任一不同就算跨域，默认拦截。前端 Vite 跑在
+localhost:5173，后端在 localhost:8080，端口不同 = 跨域。解决：后端用
+WebMvcConfigurer 配 CORS，显式允许 5173 等来源的请求，浏览器收到响应头里的
+Access-Control-Allow-Origin 才放行。
+
+### Q: 中间表是联合主键，MyBatis-Plus 怎么处理的？
+
+A: MP 的 BaseMapper 假设单一主键，多个 @TableId 会直接报错。我的处理是每张
+中间表只标一个 @TableId(type=IdType.INPUT)（INPUT 表示主键值由业务插入、
+非自增），另一个主键列标 @TableField。数据库层面联合主键不变，中间表的
+插入/删除走自定义查询（按两个外键定位），不依赖 getById 这类单主键方法。
