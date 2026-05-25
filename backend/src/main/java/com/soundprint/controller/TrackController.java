@@ -2,10 +2,12 @@ package com.soundprint.controller;
 
 import com.soundprint.common.PageResult;
 import com.soundprint.common.Result;
+import com.soundprint.dto.request.tag.TrackTagAssignRequest;
 import com.soundprint.dto.request.track.TrackQueryRequest;
 import com.soundprint.dto.request.track.TrackUpdateRequest;
 import com.soundprint.dto.response.TrackDetailResponse;
 import com.soundprint.dto.response.TrackResponse;
+import com.soundprint.service.TagService;
 import com.soundprint.service.TrackService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class TrackController {
 
     private final TrackService trackService;
+    private final TagService tagService;
 
     @Operation(summary = "分页查询曲目")
     @GetMapping
@@ -77,5 +80,13 @@ public class TrackController {
     @GetMapping("/{id}/lyrics")
     public Result<String> getLyrics(@PathVariable Long id) {
         return Result.success(trackService.getLyrics(id));
+    }
+
+    @Operation(summary = "给曲目打标签（覆盖式）")
+    @PostMapping("/{trackId}/tags")
+    public Result<Void> assignTags(@PathVariable Long trackId,
+                                   @RequestBody TrackTagAssignRequest request) {
+        tagService.assignTagsToTrack(trackId, request.getTagIds());
+        return Result.success();
     }
 }

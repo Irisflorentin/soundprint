@@ -1,7 +1,11 @@
 package com.soundprint.service;
 
-import com.soundprint.entity.PlayHistory;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.soundprint.dto.request.playhistory.PlayHistoryRecordRequest;
+import com.soundprint.dto.response.PlayHistoryResponse;
+import com.soundprint.entity.PlayHistory;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +17,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface PlayHistoryService extends IService<PlayHistory> {
 
+    /** 记录一次播放 */
+    void record(PlayHistoryRecordRequest request);
+
+    /** 最近播放（去重） */
+    List<PlayHistoryResponse> recent(Integer limit);
 }

@@ -1,7 +1,9 @@
 package com.soundprint.service;
 
-import com.soundprint.entity.UserFavorite;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.soundprint.common.PageResult;
+import com.soundprint.dto.response.TrackResponse;
+import com.soundprint.entity.UserFavorite;
 
 /**
  * <p>
@@ -13,4 +15,15 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface UserFavoriteService extends IService<UserFavorite> {
 
+    /** 收藏（幂等：已收藏则不重复） */
+    void addFavorite(Long trackId);
+
+    /** 取消收藏 */
+    void removeFavorite(Long trackId);
+
+    /** 我的收藏（分页） */
+    PageResult<TrackResponse> listFavorites(Long page, Long size);
+
+    /** 是否已收藏 */
+    boolean checkFavorite(Long trackId);
 }

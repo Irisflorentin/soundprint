@@ -7,6 +7,8 @@ import com.soundprint.entity.Track;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * <p>
  * 曲目表 Mapper 接口
@@ -27,4 +29,16 @@ public interface TrackMapper extends BaseMapper<Track> {
                                            @Param("artistId") Long artistId,
                                            @Param("albumId") Long albumId,
                                            @Param("format") String format);
+
+    /** 某专辑下所有曲目（按 track_number 排序） */
+    List<TrackResponse> listByAlbum(@Param("albumId") Long albumId);
+
+    /** 某艺术家的所有曲目 */
+    List<TrackResponse> listByArtist(@Param("artistId") Long artistId);
+
+    /** 某歌单内的曲目（按 order_index 排序） */
+    List<TrackResponse> listByPlaylist(@Param("playlistId") Long playlistId);
+
+    /** 某用户收藏的曲目（分页） */
+    IPage<TrackResponse> pageByFavorite(IPage<TrackResponse> page, @Param("userId") Long userId);
 }

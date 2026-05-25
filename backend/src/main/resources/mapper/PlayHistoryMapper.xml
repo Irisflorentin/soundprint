@@ -16,4 +16,25 @@
         id, user_id, track_id, played_seconds, played_at
     </sql>
 
+    <!-- 最近播放（按曲目去重，保留每首歌最近一次） -->
+    <select id="selectRecentDistinct" resultType="com.soundprint.dto.response.PlayHistoryResponse">
+        SELECT
+            ph.track_id AS trackId, t.title AS title, ar.name AS artistName,
+            al.title AS albumTitle, t.cover_url AS coverUrl,
+            ph.played_seconds AS playedSeconds, ph.played_at AS playedAt
+        FROM play_history ph
+        JOIN (
+            SELECT track_id, MAX(played_at) AS max_at
+            FROM play_history
+            WHERE user_id = #{userId}
+            GROUP BY track_id
+        ) latest ON latest.track_id = ph.track_id AND latest.max_at = ph.played_at
+        JOIN track t       ON t.id = ph.track_id
+        LEFT JOIN artist ar ON ar.id = t.artist_id
+        LEFT JOIN album al  ON al.id = t.album_id
+        WHERE ph.user_id = #{userId}
+        ORDER BY ph.played_at DESC
+        LIMIT #{limit}
+    </select>
+
 </mapper>

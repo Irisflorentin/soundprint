@@ -30,15 +30,19 @@
         id, title, artist_id, album_id, track_number, file_path, cover_url, format, duration_seconds, bitrate_kbps, sample_rate_hz, channels, file_size_bytes, lyrics, extra_metadata, is_deleted, deleted_at, created_at, updated_at
     </sql>
 
-    <!-- 分页查询曲目（含艺术家名、专辑名），列别名直接对应 TrackResponse 字段 -->
+    <!-- JOIN 查询的列别名（直接对应 TrackResponse 字段），各处复用 -->
+    <sql id="Track_Join_Columns">
+        t.id, t.title, t.duration_seconds AS duration, t.format,
+        t.bitrate_kbps AS bitrate, t.sample_rate_hz AS sampleRate,
+        t.file_size_bytes AS fileSizeBytes,
+        t.cover_url AS coverUrl, t.created_at AS createdAt,
+        t.artist_id AS artistId, ar.name AS artistName,
+        t.album_id AS albumId, al.title AS albumTitle, al.cover_url AS albumCoverUrl
+    </sql>
+
+    <!-- 分页查询曲目（含艺术家名、专辑名） -->
     <select id="pageWithRelations" resultType="com.soundprint.dto.response.TrackResponse">
-        SELECT
-            t.id, t.title, t.duration_seconds AS duration, t.format,
-            t.bitrate_kbps AS bitrate, t.sample_rate_hz AS sampleRate,
-            t.file_size_bytes AS fileSizeBytes,
-            t.cover_url AS coverUrl, t.created_at AS createdAt,
-            t.artist_id AS artistId, ar.name AS artistName,
-            t.album_id AS albumId, al.title AS albumTitle, al.cover_url AS albumCoverUrl
+        SELECT <include refid="Track_Join_Columns"/>
         FROM track t
         LEFT JOIN artist ar ON ar.id = t.artist_id AND ar.is_deleted = 0
         LEFT JOIN album al  ON al.id = t.album_id  AND al.is_deleted = 0
@@ -52,6 +56,48 @@
         <if test="albumId != null">AND t.album_id = #{albumId}</if>
         <if test="format != null and format != ''">AND t.format = #{format}</if>
         ORDER BY t.created_at DESC
+    </select>
+
+    <!-- 某专辑下的所有曲目（按专辑内编号排序） -->
+    <select id="listByAlbum" resultType="com.soundprint.dto.response.TrackResponse">
+        SELECT <include refid="Track_Join_Columns"/>
+        FROM track t
+        LEFT JOIN artist ar ON ar.id = t.artist_id AND ar.is_deleted = 0
+        LEFT JOIN album al  ON al.id = t.album_id  AND al.is_deleted = 0
+        WHERE t.is_deleted = 0 AND t.album_id = #{albumId}
+        ORDER BY t.track_number ASC, t.id ASC
+    </select>
+
+    <!-- 某艺术家的所有曲目 -->
+    <select id="listByArtist" resultType="com.soundprint.dto.response.TrackResponse">
+        SELECT <include refid="Track_Join_Columns"/>
+        FROM track t
+        LEFT JOIN artist ar ON ar.id = t.artist_id AND ar.is_deleted = 0
+        LEFT JOIN album al  ON al.id = t.album_id  AND al.is_deleted = 0
+        WHERE t.is_deleted = 0 AND t.artist_id = #{artistId}
+        ORDER BY t.created_at DESC
+    </select>
+
+    <!-- 某歌单内的曲目（按歌单内排序 order_index） -->
+    <select id="listByPlaylist" resultType="com.soundprint.dto.response.TrackResponse">
+        SELECT <include refid="Track_Join_Columns"/>
+        FROM playlist_track pt
+        JOIN track t       ON t.id = pt.track_id AND t.is_deleted = 0
+        LEFT JOIN artist ar ON ar.id = t.artist_id AND ar.is_deleted = 0
+        LEFT JOIN album al  ON al.id = t.album_id  AND al.is_deleted = 0
+        WHERE pt.playlist_id = #{playlistId}
+        ORDER BY pt.order_index ASC
+    </select>
+
+    <!-- 某用户的收藏曲目（分页，按收藏时间倒序） -->
+    <select id="pageByFavorite" resultType="com.soundprint.dto.response.TrackResponse">
+        SELECT <include refid="Track_Join_Columns"/>
+        FROM user_favorite uf
+        JOIN track t       ON t.id = uf.track_id AND t.is_deleted = 0
+        LEFT JOIN artist ar ON ar.id = t.artist_id AND ar.is_deleted = 0
+        LEFT JOIN album al  ON al.id = t.album_id  AND al.is_deleted = 0
+        WHERE uf.user_id = #{userId}
+        ORDER BY uf.favorited_at DESC
     </select>
 
 </mapper>
