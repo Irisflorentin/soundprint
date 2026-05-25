@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.soundprint.mapper.TrackTagMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.soundprint.entity.TrackTag">
+        <id column="track_id" property="trackId" />
+        <id column="tag_id" property="tagId" />
+        <result column="tagged_at" property="taggedAt" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        track_id, tag_id, tagged_at
+    </sql>
+
+</mapper>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.soundprint.mapper.AlbumMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.soundprint.entity.Album">
+        <id column="id" property="id" />
+        <result column="title" property="title" />
+        <result column="artist_id" property="artistId" />
+        <result column="cover_url" property="coverUrl" />
+        <result column="release_year" property="releaseYear" />
+        <result column="genre" property="genre" />
+        <result column="description" property="description" />
+        <result column="is_deleted" property="isDeleted" />
+        <result column="deleted_at" property="deletedAt" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, title, artist_id, cover_url, release_year, genre, description, is_deleted, deleted_at, created_at, updated_at
+    </sql>
+
+</mapper>
