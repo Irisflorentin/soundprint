@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -69,6 +70,23 @@ public class FileStorageUtil {
             Files.write(dest.toPath(), data);
         } catch (IOException e) {
             throw new BusinessException("文件保存失败: " + e.getMessage());
+        }
+        return relative;
+    }
+
+    /**
+     * 把一个已存在的文件复制到指定子目录，返回相对路径。
+     * 用于转换骨架：把源音频"复制"为转换结果（Phase 5 才换成真正的 FFmpeg 转码）。
+     */
+    public String copyFile(File source, String subDir, String ext) {
+        String filename = UUID.randomUUID().toString().replace("-", "") + "." + ext;
+        String relative = subDir + "/" + filename;
+        File dest = new File(storageProps.getBaseDir(), relative);
+        ensureParent(dest);
+        try {
+            Files.copy(source.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new BusinessException("文件复制失败: " + e.getMessage());
         }
         return relative;
     }

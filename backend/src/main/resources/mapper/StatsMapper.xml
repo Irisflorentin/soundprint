@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.soundprint.mapper.StatsMapper">
+
+    <select id="sumTrackDuration" resultType="java.lang.Long">
+        SELECT COALESCE(SUM(duration_seconds), 0) FROM track WHERE is_deleted = 0
+    </select>
+
+    <select id="countPlays" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM play_history WHERE user_id = #{userId}
+    </select>
+
+    <select id="sumPlayedSeconds" resultType="java.lang.Long">
+        SELECT COALESCE(SUM(played_seconds), 0) FROM play_history WHERE user_id = #{userId}
+    </select>
+
+    <!-- 流派分布：播放记录 JOIN 曲目 JOIN 专辑，按专辑流派分组 -->
+    <select id="genreDistribution" resultType="com.soundprint.dto.response.stats.GenreDistributionItem">
+        SELECT al.genre AS genre, COUNT(*) AS count
+        FROM play_history ph
+        JOIN track t  ON t.id = ph.track_id
+        JOIN album al ON al.id = t.album_id
+        WHERE ph.user_id = #{userId} AND al.genre IS NOT NULL AND al.genre != ''
+        GROUP BY al.genre
+        ORDER BY count DESC
+    </select>
+
+    <!-- Top 艺术家 -->
+    <select id="topArtists" resultType="com.soundprint.dto.response.stats.TopArtistItem">
+        SELECT ar.id AS artistId, ar.name AS artistName, COUNT(*) AS playCount
+        FROM play_history ph
+        JOIN track t   ON t.id = ph.track_id
+        JOIN artist ar ON ar.id = t.artist_id
+        WHERE ph.user_id = #{userId}
+        GROUP BY ar.id, ar.name
+        ORDER BY playCount DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 月度趋势 -->
+    <select id="monthlyTrend" resultType="com.soundprint.dto.response.stats.MonthlyTrendItem">
+        SELECT DATE_FORMAT(played_at, '%Y-%m') AS month,
+               COUNT(*) AS playCount,
+               COALESCE(SUM(played_seconds), 0) AS totalSeconds
+        FROM play_history
+        WHERE user_id = #{userId}
+          AND played_at >= DATE_SUB(NOW(), INTERVAL #{months} MONTH)
+        GROUP BY month
+        ORDER BY month
+    </select>
+
+    <!-- 热力图（每天一格） -->
+    <select id="heatmap" resultType="com.soundprint.dto.response.stats.HeatmapItem">
+        SELECT DATE_FORMAT(played_at, '%Y-%m-%d') AS date,
+               COUNT(*) AS count,
+               COALESCE(SUM(played_seconds), 0) AS totalSeconds
+        FROM play_history
+        WHERE user_id = #{userId}
+          AND played_at >= DATE_SUB(NOW(), INTERVAL #{days} DAY)
+        GROUP BY date
+        ORDER BY date
+    </select>
+
+</mapper>

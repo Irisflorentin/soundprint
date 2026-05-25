@@ -65,6 +65,8 @@ WHERE is_deleted = 0。物理删除（包括磁盘文件清理）由后台任务
 
 （按时间倒序记录）
 
+- **2026-05-25 · @TableField(fill) 不配 MetaObjectHandler 等于没填**：实体上标了 `@TableField(fill = FieldFill.INSERT)` 的 `created_at`，插入时仍报 `Column 'created_at' cannot be null`。原因：fill 注解只是声明意图，MyBatis-Plus 真正写值要实现一个 `MetaObjectHandler` Bean，代码生成器只加了注解没生成 handler。解决：新增 `MybatisMetaObjectHandler`，在 `insertFill/updateFill` 里用 `strictInsertFill/strictUpdateFill` 填 createdAt/updatedAt。坑的隐蔽点：中间表（playlist_track 等）的时间字段是手动 set 的，不依赖 fill，所以前面测试一直没暴露，直到第一个走 fill 的 insert（转换任务）才炸。
+- **2026-05-25 · MySQL only_full_group_by 严格模式**：热力图 SQL `SELECT DATE_FORMAT(played_at,'%Y-%m-%d') ... GROUP BY DATE(played_at)` 报错 `not functionally dependent ... incompatible with sql_mode=only_full_group_by`。原因：MySQL 8 默认开启 only_full_group_by，SELECT 里的非聚合列必须能被 GROUP BY 列推导出来，而 `DATE_FORMAT(...)` 和 `DATE(...)` 被视为不同表达式。解决：GROUP BY 改用 SELECT 的别名（`GROUP BY date`），与月度趋势查询保持一致写法。
 - **2026-05-25 · 中间表复合主键炸了 MyBatis-Plus**：`playlist_track`、`track_tag`、`user_favorite` 三张中间表用的是联合主键（两列），代码生成器给两列都打了 `@TableId`，启动时报 `@TableId can't more than one in Class`。MP 的 `BaseMapper`（getById/updateById 等）只支持单主键。解决：每张表只保留一个 `@TableId(type = IdType.INPUT)`（INPUT = 值由业务插入，非自增），另一列改 `@TableField`。不动数据库的联合主键，中间表的增删改用自定义查询处理。
 - **2026-05-25 · JDBC characterEncoding 填错**：连接串里写了 `characterEncoding=utf8mb4`，启动报 `Unsupported character encoding 'utf8mb4'`。原因：该参数要的是 **Java 字符集名**（`UTF-8`），`utf8mb4` 是 MySQL 服务端字符集名，两者不能混。改成 `UTF-8` 后，配合服务器的 utf8mb4 即可正确存 4 字节字符。
 - **2026-05-25 · Maven 注解处理器路径缺版本号**：pom 里给 Lombok 配 `annotationProcessorPaths` 但没写 `<version>`，Maven 3.9.16 + compiler-plugin 3.11.0 不会自动从父 POM 继承，报 `version can neither be null...`。解决：补 `<version>${lombok.version}</version>`（引用 Spring Boot 父 POM 已定义的属性，不自己挑版本）。
