@@ -47,3 +47,18 @@ knife4j:
     - group: 默认
       name: Soundprint API
       locations: classpath:markdown/*
+
+# ========== Soundprint 业务配置 ==========
+soundprint:
+  storage:
+    base-dir: D:/soundprint-storage              # 文件存储根目录
+    audio-dir: D:/soundprint-storage/audio       # 音频文件
+    cover-dir: D:/soundprint-storage/cover       # 封面图片
+    avatar-dir: D:/soundprint-storage/avatar     # 头像
+    conversion-dir: D:/soundprint-storage/conversion  # 转换后的文件
+    temp-dir: D:/soundprint-storage/temp         # 临时文件
+  upload:
+    max-file-size: 200MB
+    allowed-audio-formats: flac,mp3,wav,aac,ogg,m4a
+    allowed-image-formats: jpg,jpeg,png,webp
+  current-user-id: 1   # 临时方案：默认用户 1，Phase 4 加登录后改成从 SecurityContext 取

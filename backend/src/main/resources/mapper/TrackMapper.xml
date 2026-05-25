@@ -30,4 +30,28 @@
         id, title, artist_id, album_id, track_number, file_path, cover_url, format, duration_seconds, bitrate_kbps, sample_rate_hz, channels, file_size_bytes, lyrics, extra_metadata, is_deleted, deleted_at, created_at, updated_at
     </sql>
 
+    <!-- 分页查询曲目（含艺术家名、专辑名），列别名直接对应 TrackResponse 字段 -->
+    <select id="pageWithRelations" resultType="com.soundprint.dto.response.TrackResponse">
+        SELECT
+            t.id, t.title, t.duration_seconds AS duration, t.format,
+            t.bitrate_kbps AS bitrate, t.sample_rate_hz AS sampleRate,
+            t.file_size_bytes AS fileSizeBytes,
+            t.cover_url AS coverUrl, t.created_at AS createdAt,
+            t.artist_id AS artistId, ar.name AS artistName,
+            t.album_id AS albumId, al.title AS albumTitle, al.cover_url AS albumCoverUrl
+        FROM track t
+        LEFT JOIN artist ar ON ar.id = t.artist_id AND ar.is_deleted = 0
+        LEFT JOIN album al  ON al.id = t.album_id  AND al.is_deleted = 0
+        WHERE t.is_deleted = 0
+        <if test="keyword != null and keyword != ''">
+            AND (t.title LIKE CONCAT('%', #{keyword}, '%')
+                OR ar.name LIKE CONCAT('%', #{keyword}, '%')
+                OR al.title LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="artistId != null">AND t.artist_id = #{artistId}</if>
+        <if test="albumId != null">AND t.album_id = #{albumId}</if>
+        <if test="format != null and format != ''">AND t.format = #{format}</if>
+        ORDER BY t.created_at DESC
+    </select>
+
 </mapper>
