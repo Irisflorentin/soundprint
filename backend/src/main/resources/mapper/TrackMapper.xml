@@ -40,12 +40,14 @@
         t.album_id AS albumId, al.title AS albumTitle, al.cover_url AS albumCoverUrl
     </sql>
 
-    <!-- 分页查询曲目（含艺术家名、专辑名） -->
+    <!-- 分页查询曲目（含艺术家名、专辑名、当前用户是否收藏） -->
     <select id="pageWithRelations" resultType="com.soundprint.dto.response.TrackResponse">
-        SELECT <include refid="Track_Join_Columns"/>
+        SELECT <include refid="Track_Join_Columns"/>,
+            (uf.user_id IS NOT NULL) AS favorited
         FROM track t
         LEFT JOIN artist ar ON ar.id = t.artist_id AND ar.is_deleted = 0
         LEFT JOIN album al  ON al.id = t.album_id  AND al.is_deleted = 0
+        LEFT JOIN user_favorite uf ON uf.track_id = t.id AND uf.user_id = #{userId}
         WHERE t.is_deleted = 0
         <if test="keyword != null and keyword != ''">
             AND (t.title LIKE CONCAT('%', #{keyword}, '%')

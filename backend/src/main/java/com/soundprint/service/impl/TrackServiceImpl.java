@@ -55,7 +55,8 @@ public class TrackServiceImpl extends ServiceImpl<TrackMapper, Track> implements
         Page<TrackResponse> page = new Page<>(query.getPage(), query.getSize());
         // baseMapper 即 TrackMapper，pageWithRelations 走 LEFT JOIN，一次查询避免 N+1
         IPage<TrackResponse> result = baseMapper.pageWithRelations(
-                page, query.getKeyword(), query.getArtistId(), query.getAlbumId(), query.getFormat());
+                page, currentUserUtil.getCurrentUserId(),
+                query.getKeyword(), query.getArtistId(), query.getAlbumId(), query.getFormat());
         return PageResult.of(result.getRecords(), result.getTotal(), result.getCurrent(), result.getSize());
     }
 

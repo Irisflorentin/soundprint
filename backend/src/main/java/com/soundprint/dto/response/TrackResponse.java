@@ -28,6 +28,7 @@ public class TrackResponse {
     private Integer bitrate;       // 比特率（kbps）
     private Integer sampleRate;    // 采样率（Hz）
     private Long fileSizeBytes;    // 文件大小（字节）
+    private Boolean favorited;     // 当前用户是否已收藏（仅 JOIN 查询路径填充）
     private LocalDateTime createdAt;
 
     /** 由 Entity 手工组装（关联对象可为 null） */

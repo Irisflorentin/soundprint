@@ -25,6 +25,7 @@ public interface TrackMapper extends BaseMapper<Track> {
      * IPage 参数被 MyBatis-Plus 分页插件识别，自动补 LIMIT 和 COUNT。
      */
     IPage<TrackResponse> pageWithRelations(IPage<TrackResponse> page,
+                                           @Param("userId") Long userId,
                                            @Param("keyword") String keyword,
                                            @Param("artistId") Long artistId,
                                            @Param("albumId") Long albumId,

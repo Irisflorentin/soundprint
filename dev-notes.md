@@ -9,7 +9,7 @@
 - Phase 1（数据库设计）：2026-05-24 完成
 - Phase 2（后端骨架）：2026-05-25 完成
 - Phase 3（后端业务）：2026-05-25 完成
-- Phase 4（前端业务）：待开始
+- Phase 4（前端骨架）：2026-05-26 完成（Codex 接力实现，Claude 审计 + 收藏补漏）
 - Phase 5（播放器+转换）：待开始
 - Phase 6（统计可视化）：待开始
 - Phase 7（视觉精修）：待开始
@@ -65,6 +65,8 @@ WHERE is_deleted = 0。物理删除（包括磁盘文件清理）由后台任务
 
 （按时间倒序记录）
 
+- **2026-05-26 · 前端实际版本高于课程文档（Vite 8 / TS 6）**：`npm create vite@latest` 生成的是 Vite 8 + TypeScript 6 + Vue 3.5，而 CLAUDE.md/文档写的是 Vite 5 / TS 5。决定**保持不降级**——功能等价，且 **Tailwind 已锁 3.x**（vue-bits 兼容的关键项才是真正重要的）。代价：TS 6 对部分编译选项更严，`tsconfig.app.json` 加了 `"ignoreDeprecations": "6.0"` 才能过 `vue-tsc -b` 构建。答辩说辞："脚手架默认就是最新 Vite/TS，主版本号不影响技术栈本质，按需锁定的是 Tailwind 3 以兼容 vue-bits。"
+- **2026-05-26 · 列表收藏状态需 JOIN 才能拿到**：`TrackResponse`（列表 DTO）原本没有收藏状态，音乐库无法显示心形。解决：`pageWithRelations` 加 `LEFT JOIN user_favorite uf ON uf.track_id=t.id AND uf.user_id=#{userId}`，SELECT `(uf.user_id IS NOT NULL) AS favorited`，前端据此渲染可切换心形。避免了"前端造假状态"。
 - **2026-05-25 · @TableField(fill) 不配 MetaObjectHandler 等于没填**：实体上标了 `@TableField(fill = FieldFill.INSERT)` 的 `created_at`，插入时仍报 `Column 'created_at' cannot be null`。原因：fill 注解只是声明意图，MyBatis-Plus 真正写值要实现一个 `MetaObjectHandler` Bean，代码生成器只加了注解没生成 handler。解决：新增 `MybatisMetaObjectHandler`，在 `insertFill/updateFill` 里用 `strictInsertFill/strictUpdateFill` 填 createdAt/updatedAt。坑的隐蔽点：中间表（playlist_track 等）的时间字段是手动 set 的，不依赖 fill，所以前面测试一直没暴露，直到第一个走 fill 的 insert（转换任务）才炸。
 - **2026-05-25 · MySQL only_full_group_by 严格模式**：热力图 SQL `SELECT DATE_FORMAT(played_at,'%Y-%m-%d') ... GROUP BY DATE(played_at)` 报错 `not functionally dependent ... incompatible with sql_mode=only_full_group_by`。原因：MySQL 8 默认开启 only_full_group_by，SELECT 里的非聚合列必须能被 GROUP BY 列推导出来，而 `DATE_FORMAT(...)` 和 `DATE(...)` 被视为不同表达式。解决：GROUP BY 改用 SELECT 的别名（`GROUP BY date`），与月度趋势查询保持一致写法。
 - **2026-05-25 · 中间表复合主键炸了 MyBatis-Plus**：`playlist_track`、`track_tag`、`user_favorite` 三张中间表用的是联合主键（两列），代码生成器给两列都打了 `@TableId`，启动时报 `@TableId can't more than one in Class`。MP 的 `BaseMapper`（getById/updateById 等）只支持单主键。解决：每张表只保留一个 `@TableId(type = IdType.INPUT)`（INPUT = 值由业务插入，非自增），另一列改 `@TableField`。不动数据库的联合主键，中间表的增删改用自定义查询处理。
@@ -102,6 +104,19 @@ WHERE is_deleted = 0。物理删除（包括磁盘文件清理）由后台任务
 9. Lombok 编译期注解处理 + 构造器注入（@RequiredArgsConstructor）
 10. 多环境配置隔离（profiles dev/prod）+ HikariCP 连接池
 11. 软删除全局生效（logic-delete-field 配置 + 实体 @TableLogic，查询自动加 is_deleted=0）
+
+### Phase 4 完成的可讲技术点（前端骨架）
+
+1. Vite 代理 `/api → :8080` 解决开发期跨域（生产用 Nginx 同理转发）
+2. Axios 响应拦截器自动剥 `Result<T>` 壳 + 统一 ElMessage 报错（调用方直接拿 data）
+3. Tailwind 与 Element-Plus 共存：`preflight:false` 关掉 Tailwind reset 防冲突
+4. 设计令牌系统：颜色/间距/圆角/阴影集中管理（tokens.scss + tailwind.config），Element-Plus 主色对齐品牌紫
+5. CSS Grid 三段式布局（grid-template-areas：侧栏/主区/底栏）
+6. Pinia（Composition 风格 + TS）分 user/player/library store
+7. Vue Router `meta.hideChrome` 控制登录页不套主框架 + 路由守卫
+8. TS 类型严格对齐后端 DTO（不为 UI 造假字段；列表收藏状态靠 SQL JOIN 真实返回）
+9. 磨砂玻璃 `backdrop-filter: blur` 统一封装进 GlassCard 组件
+10. 工程协作：Claude 搭骨架(段1-2) → Codex 接力完成页面 → Claude 审计补漏，体现可交接性
 
 ## ❓ 答辩可能被问到的问题与回答
 

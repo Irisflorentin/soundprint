@@ -2,13 +2,14 @@
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { Delete, Refresh, Search, Upload, VideoPlay } from '@element-plus/icons-vue';
+import { Delete, Refresh, Search, Star, StarFilled, Upload, VideoPlay } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import PageHeader from '@/components/common/PageHeader.vue';
 import LoadingBlock from '@/components/common/LoadingBlock.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 import GlassCard from '@/components/common/GlassCard.vue';
 import { trackApi } from '@/api/track';
+import { favoriteApi } from '@/api/favorite';
 import type { Track } from '@/types/track';
 import { useLibraryStore } from '@/stores/library';
 import { usePlayerStore } from '@/stores/player';
@@ -73,6 +74,18 @@ function handleSizeChange(nextSize: number) {
 
 function play(track: Track) {
   playerStore.play(track);
+}
+
+async function toggleFavorite(track: Track) {
+  if (track.favorited) {
+    await favoriteApi.remove(track.id);
+    track.favorited = false;
+    ElMessage.success('已取消收藏');
+  } else {
+    await favoriteApi.add(track.id);
+    track.favorited = true;
+    ElMessage.success('已收藏');
+  }
 }
 
 async function removeTrack(track: Track) {
@@ -242,9 +255,16 @@ onMounted(() => {
               <el-tag size="small" effect="dark">{{ row.format }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="112" fixed="right">
+          <el-table-column label="操作" width="150" fixed="right">
             <template #default="{ row }">
               <el-button :icon="VideoPlay" circle size="small" @click.stop="play(row)" />
+              <el-button
+                :icon="row.favorited ? StarFilled : Star"
+                circle
+                size="small"
+                :class="{ 'is-fav': row.favorited }"
+                @click.stop="toggleFavorite(row)"
+              />
               <el-button :icon="Delete" circle size="small" type="danger" @click.stop="removeTrack(row)" />
             </template>
           </el-table-column>
@@ -344,6 +364,11 @@ onMounted(() => {
   justify-content: flex-end;
   padding: var(--space-4);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+:deep(.is-fav) {
+  color: var(--color-brand);
+  border-color: rgba(124, 58, 237, 0.5);
 }
 
 @media (max-width: 1100px) {

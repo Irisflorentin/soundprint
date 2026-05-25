@@ -14,6 +14,7 @@ export interface Track {
   bitrate: number;
   sampleRate: number;
   fileSizeBytes: number;
+  favorited?: boolean;     // 列表 JOIN 查询返回；当前用户是否已收藏
   createdAt: string;
 }
 
