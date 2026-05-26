@@ -5,6 +5,7 @@ import com.soundprint.common.PageResult;
 import com.soundprint.dto.request.track.TrackQueryRequest;
 import com.soundprint.dto.request.track.TrackUpdateRequest;
 import com.soundprint.dto.response.TrackDetailResponse;
+import com.soundprint.dto.response.TrackPeaksResponse;
 import com.soundprint.dto.response.TrackResponse;
 import com.soundprint.entity.Track;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,6 +42,9 @@ public interface TrackService extends IService<Track> {
 
     /** 获取曲目的音频文件（用于流式播放） */
     File getAudioFile(Long id);
+
+    /** 获取曲目的预计算波形峰值数据 */
+    TrackPeaksResponse getPeaks(Long id, Integer samples);
 
     /** 上传/更新歌词 */
     void updateLyrics(Long id, String lyrics);

@@ -335,14 +335,14 @@ section {
   font-weight: 600;
 }
 
-.status-pending { background: rgba(161, 161, 170, 0.15); color: var(--color-fg-secondary); }
-.status-running { background: rgba(124, 58, 237, 0.15); color: var(--color-brand); }
-.status-success { background: rgba(34, 197, 94, 0.15); color: rgb(34, 197, 94); }
-.status-failed  { background: rgba(239, 68, 68, 0.15); color: rgb(239, 68, 68); }
+.status-pending { background: var(--color-info-bg); color: var(--color-info); }
+.status-running { background: color-mix(in srgb, var(--color-brand) 15%, transparent); color: var(--color-brand); }
+.status-success { background: var(--color-success-bg); color: var(--color-success); }
+.status-failed  { background: var(--color-danger-bg); color: var(--color-danger); }
 
 .error-message {
   margin: var(--space-3) 0 0;
-  color: rgb(239, 68, 68);
+  color: var(--color-danger);
   font-size: 12px;
   line-height: 1.5;
 }

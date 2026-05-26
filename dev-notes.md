@@ -11,7 +11,7 @@
 - Phase 3（后端业务）：2026-05-25 完成
 - Phase 4（前端骨架）：2026-05-26 完成（Codex 接力实现，Claude 审计 + 收藏补漏）
 - Phase 5（播放器+转换）：2026-05-26 完成（Codex 实现，待 Claude 审计）
-- Phase 6（统计可视化）：待开始
+- Phase 6（统计可视化）：2026-05-26 完成（Codex 实现，待 Claude 审计）
 - Phase 7（视觉精修）：待开始
 - Phase 8（部署+报告）：待开始
 
@@ -71,6 +71,10 @@ WHERE is_deleted = 0。物理删除（包括磁盘文件清理）由后台任务
 - **2026-05-26 · FFmpeg 进度来自 stderr 而不是 stdout**：FFmpeg 的 `Duration` 和 `time=` 进度行输出在错误流。`FFmpegRunner` 用 `ProcessBuilder.redirectErrorStream(true)` 合并输出后按正则解析，总时长做分母、当前 `time=` 做分子，得到 0-100 进度。命令使用参数数组，不拼 shell 字符串，避免空格路径和命令注入。
 - **2026-05-26 · wavesurfer 只画波形，不负责播放**：全局播放只允许 Pinia player store 里的单例 `HTMLAudioElement` 负责，wavesurfer 只 `load('/api/stream/{id}')` 做波形渲染和点击 seek。缺点是音频会被请求两次；好处是不会出现多个播放器同时播放、状态不同步的问题。
 - **2026-05-26 · Phase 5 真实转换验证物证**：用 FFmpeg 生成 2 秒测试 MP3，经 `/api/tracks/upload` 上传为 trackId=32，再提交 `/api/conversions` 转 WAV，taskId=4 最终 `SUCCESS/100`，下载文件 352878 bytes，`ffprobe` 识别 `format_name=wav`、`duration=2.000000`。
+- **2026-05-26 · ECharts 配色不能散落在每个图表里**：Phase 6 新增 `echarts-theme.ts` 统一注册 `soundprint-dark` 主题，并导出 `SOUNDPRINT_CHART_COLORS`。图表组件只描述业务 option，轴线、tooltip、文字等公共样式走主题；必须单独配置的渐变/热力图颜色也引用同一个主题色常量，避免每个图表各写一套颜色。
+- **2026-05-26 · wavesurfer 大文件波形性能隐患**：Phase 5 的波形会让浏览器下载并解码完整音频，大 FLAC 可能慢且占内存。Phase 6 新增 `/api/tracks/{id}/peaks`，后端用 FFmpeg 输出单声道 8kHz `f32le` PCM，Java 解码后等距取绝对峰值，前端用 `wavesurfer.load(url, [peaks], duration)` 直接画波形。实测 trackId=31 首次生成约 750ms，缓存命中约 133ms，JSON 约 7.7KB。
+- **2026-05-26 · peaks 缓存必须防止重复跑 FFmpeg**：第一次生成后写入 `D:/soundprint-storage/peaks/{trackId}.json`，后续同 sampleCount + duration 请求直接读缓存。缓存读失败或参数不匹配时重新生成，不影响主流程。
+- **2026-05-26 · ECharts option 更新用 notMerge + lazyUpdate**：`BaseChart` 中 `setOption(option, { notMerge: true, lazyUpdate: true })`。`notMerge` 避免旧 series/axis 残留导致图表数据串场；`lazyUpdate` 让 ECharts 把渲染合并到下一帧，降低连续响应式更新时的抖动。
 - **2026-05-25 · @TableField(fill) 不配 MetaObjectHandler 等于没填**：实体上标了 `@TableField(fill = FieldFill.INSERT)` 的 `created_at`，插入时仍报 `Column 'created_at' cannot be null`。原因：fill 注解只是声明意图，MyBatis-Plus 真正写值要实现一个 `MetaObjectHandler` Bean，代码生成器只加了注解没生成 handler。解决：新增 `MybatisMetaObjectHandler`，在 `insertFill/updateFill` 里用 `strictInsertFill/strictUpdateFill` 填 createdAt/updatedAt。坑的隐蔽点：中间表（playlist_track 等）的时间字段是手动 set 的，不依赖 fill，所以前面测试一直没暴露，直到第一个走 fill 的 insert（转换任务）才炸。
 - **2026-05-25 · MySQL only_full_group_by 严格模式**：热力图 SQL `SELECT DATE_FORMAT(played_at,'%Y-%m-%d') ... GROUP BY DATE(played_at)` 报错 `not functionally dependent ... incompatible with sql_mode=only_full_group_by`。原因：MySQL 8 默认开启 only_full_group_by，SELECT 里的非聚合列必须能被 GROUP BY 列推导出来，而 `DATE_FORMAT(...)` 和 `DATE(...)` 被视为不同表达式。解决：GROUP BY 改用 SELECT 的别名（`GROUP BY date`），与月度趋势查询保持一致写法。
 - **2026-05-25 · 中间表复合主键炸了 MyBatis-Plus**：`playlist_track`、`track_tag`、`user_favorite` 三张中间表用的是联合主键（两列），代码生成器给两列都打了 `@TableId`，启动时报 `@TableId can't more than one in Class`。MP 的 `BaseMapper`（getById/updateById 等）只支持单主键。解决：每张表只保留一个 `@TableId(type = IdType.INPUT)`（INPUT = 值由业务插入，非自增），另一列改 `@TableField`。不动数据库的联合主键，中间表的增删改用自定义查询处理。
@@ -134,6 +138,21 @@ WHERE is_deleted = 0。物理删除（包括磁盘文件清理）由后台任务
 8. 异步转换：`@EnableAsync + @Async` 让耗时转换在后台线程执行，Controller 立即返回任务 id。
 9. 轮询进度：前端转换工坊每 0.8 秒查询任务状态，短任务足够简单稳定，暂不引入 WebSocket/SSE。
 10. 歌单拖拽排序：`vuedraggable@next` 管 UI 顺序，释放后调用后端 `PUT /api/playlists/{id}/reorder` 持久化。
+
+### Phase 6 完成的可讲技术点（统计页 + 图表 + 波形优化）
+
+1. 设计令牌闭环：Phase 5 临时硬编码的 success/warning/danger/info 状态色，在 Phase 6 同步补进 `tailwind.config.js` 和 `tokens.scss`，转换工坊改用 CSS 变量，视觉不变但技术债清零。
+2. ECharts 统一主题：`registerSoundprintTheme()` 在 `main.ts` 启动时注册，所有图表通过 `BaseChart` 使用 `soundprint-dark`，避免白底闪烁和重复配置。
+3. `BaseChart` 抽象：唯一持有 `echarts.init/dispose/resize` 的组件，具体图表只传 `option`，降低内存泄漏和重复代码风险。
+4. `shallowRef` 管 ECharts 实例：实例是第三方复杂对象，不需要 Vue 深度代理；用 `shallowRef` 只追踪引用变化，性能更稳。
+5. 环形饼图：`radius: ['48%', '72%']` 形成 donut，中心留白，适合展示流派占比；数据来自后端聚合，不在前端伪造。
+6. GitHub 风格热力图：ECharts `calendar + heatmap` 把 365 天播放行为映射成日历格子，适合展示长期习惯，视觉密度高。
+7. 横向 Top 艺术家条形图：横向条形更适合艺术家名称这种长文本，`grid.containLabel` 保证标签不被裁剪。
+8. KPI 翻牌动画：`requestAnimationFrame` + ease-out 插值，不用定时器；浏览器按刷新率调度，动画平滑且不阻塞。
+9. PCM f32le 解码：后端不直接解析 FLAC/MP3，而让 FFmpeg 统一转成 raw PCM 32-bit float little-endian，Java 用位运算把 4 字节还原成 float，再按桶取绝对峰值。
+10. 波形优化成本/收益：第一次 peaks 要跑 FFmpeg，耗时约 1 秒内；之后读文件缓存是毫秒级。前端只拿几 KB JSON，而不是为画波形下载几十 MB FLAC。
+11. `notMerge/lazyUpdate`：`notMerge` 防止旧图表配置残留，`lazyUpdate` 把渲染延迟到下一帧批处理，适合 Vue 响应式数据更新。
+12. ProcessBuilder 安全调用：peaks 与转换都使用参数数组调用 FFmpeg，不拼接 shell 字符串，文件名有空格也不会出错，同时规避命令注入。
 
 ## ❓ 答辩可能被问到的问题与回答
 

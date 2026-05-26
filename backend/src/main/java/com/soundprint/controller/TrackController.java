@@ -6,6 +6,7 @@ import com.soundprint.dto.request.tag.TrackTagAssignRequest;
 import com.soundprint.dto.request.track.TrackQueryRequest;
 import com.soundprint.dto.request.track.TrackUpdateRequest;
 import com.soundprint.dto.response.TrackDetailResponse;
+import com.soundprint.dto.response.TrackPeaksResponse;
 import com.soundprint.dto.response.TrackResponse;
 import com.soundprint.service.TagService;
 import com.soundprint.service.TrackService;
@@ -47,6 +48,14 @@ public class TrackController {
     @GetMapping("/{id}")
     public Result<TrackDetailResponse> detail(@PathVariable Long id) {
         return Result.success(trackService.getDetail(id));
+    }
+
+    @Operation(summary = "获取曲目波形峰值数据（供 wavesurfer 加载）")
+    @GetMapping("/{id}/peaks")
+    public Result<TrackPeaksResponse> peaks(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "1000") Integer samples) {
+        return Result.success(trackService.getPeaks(id, samples));
     }
 
     @Operation(summary = "上传音频文件")

@@ -3,12 +3,14 @@ import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import WaveSurfer from 'wavesurfer.js';
 import { usePlayerStore } from '@/stores/player';
+import { trackApi } from '@/api/track';
 
 const container = ref<HTMLDivElement | null>(null);
 const player = usePlayerStore();
 const { currentTrack, currentTime } = storeToRefs(player);
 
 let wavesurfer: WaveSurfer | null = null;
+let loadVersion = 0;
 
 onMounted(() => {
   if (!container.value) return;
@@ -47,10 +49,24 @@ watch(currentTime, (time) => {
 
 async function loadCurrentTrack() {
   if (!wavesurfer || !currentTrack.value) return;
+  const track = currentTrack.value;
+  const version = ++loadVersion;
   try {
-    await wavesurfer.load(`/api/stream/${currentTrack.value.id}`);
+    const peaksData = await trackApi.peaks(track.id, 1000);
+    if (version !== loadVersion) return;
+    await wavesurfer.load(
+      `/api/stream/${track.id}`,
+      [peaksData.peaks],
+      peaksData.duration
+    );
   } catch (error) {
     console.warn('波形加载失败', error);
+    if (version !== loadVersion) return;
+    try {
+      await wavesurfer.load(`/api/stream/${track.id}`);
+    } catch (fallbackError) {
+      console.warn('波形回退加载失败', fallbackError);
+    }
   }
 }
 </script>
