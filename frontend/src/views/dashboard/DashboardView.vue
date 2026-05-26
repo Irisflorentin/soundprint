@@ -169,6 +169,7 @@ onMounted(loadDashboard);
                 :src="album.coverUrl"
                 :alt="album.title"
                 :fallback-text="album.title"
+                placeholder-type="album"
                 class="mini-cover"
               />
               <span>
@@ -192,6 +193,7 @@ onMounted(loadDashboard);
                 :src="artist.avatarUrl"
                 :alt="artist.name"
                 :fallback-text="artist.name"
+                placeholder-type="artist"
                 rounded="circle"
                 class="avatar"
               />

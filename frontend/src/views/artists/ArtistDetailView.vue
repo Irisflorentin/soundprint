@@ -63,6 +63,7 @@ function playAll() {
           :src="artist.avatarUrl"
           :alt="artist.name"
           :fallback-text="artist.name"
+          placeholder-type="artist"
           rounded="circle"
           class="avatar"
         />
@@ -89,7 +90,13 @@ function playAll() {
             class="album-card"
             @click="router.push(`/albums/${album.id}`)"
           >
-            <SmartCover :src="album.coverUrl" :alt="album.title" :fallback-text="album.title" class="album-cover" />
+            <SmartCover
+              :src="album.coverUrl"
+              :alt="album.title"
+              :fallback-text="album.title"
+              placeholder-type="album"
+              class="album-cover"
+            />
             <strong>{{ album.title }}</strong>
             <small>{{ album.releaseYear || '未知年份' }}</small>
           </button>

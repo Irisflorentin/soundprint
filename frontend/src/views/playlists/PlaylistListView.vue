@@ -37,6 +37,11 @@ async function loadPlaylists() {
     loading.value = false;
   }
 }
+
+function onPlaylistSelect(playlist: { id?: number }) {
+  if (playlist.id == null) return;
+  router.push(`/playlists/${playlist.id}`);
+}
 </script>
 
 <template>
@@ -47,7 +52,7 @@ async function loadPlaylists() {
         <h2 class="hero-title">精选歌单</h2>
       </div>
       <div class="gallery-container">
-        <SoundprintCircularGallery :items="featuredPlaylists" type="playlist" />
+        <SoundprintCircularGallery :items="featuredPlaylists" type="playlist" @select="onPlaylistSelect" />
       </div>
     </section>
 
@@ -78,6 +83,7 @@ async function loadPlaylists() {
             :src="playlist.coverUrl"
             :alt="playlist.name"
             :fallback-text="playlist.name"
+            placeholder-type="playlist"
             class="cover"
           />
           <div class="body">

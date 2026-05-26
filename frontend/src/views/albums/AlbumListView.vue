@@ -42,6 +42,11 @@ async function loadFeaturedAlbums() {
 onMounted(async () => {
   await Promise.all([loadFeaturedAlbums(), loadAlbums()]);
 });
+
+function onAlbumSelect(album: { id?: number }) {
+  if (album.id == null) return;
+  router.push(`/albums/${album.id}`);
+}
 </script>
 
 <template>
@@ -52,7 +57,7 @@ onMounted(async () => {
         <h2 class="hero-title">精选专辑</h2>
       </div>
       <div class="gallery-container">
-        <SoundprintCircularGallery :items="featuredAlbums" type="album" />
+        <SoundprintCircularGallery :items="featuredAlbums" type="album" @select="onAlbumSelect" />
       </div>
     </section>
 
@@ -95,6 +100,7 @@ onMounted(async () => {
             :src="album.coverUrl"
             :alt="album.title"
             :fallback-text="album.title"
+            placeholder-type="album"
             class="cover"
           />
           <div class="body">

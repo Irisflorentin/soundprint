@@ -73,7 +73,13 @@ async function toggleFavorite(track: Track) {
 
     <template v-else>
       <section class="hero">
-        <SmartCover :src="album.coverUrl" :alt="album.title" :fallback-text="album.title" class="cover" />
+        <SmartCover
+          :src="album.coverUrl"
+          :alt="album.title"
+          :fallback-text="album.title"
+          placeholder-type="album"
+          class="cover"
+        />
         <div class="info">
           <p class="eyebrow">Album</p>
           <h2>{{ album.title }}</h2>

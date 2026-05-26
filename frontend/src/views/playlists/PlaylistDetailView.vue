@@ -118,7 +118,13 @@ async function addSelectedTrack() {
 
     <template v-else>
       <section class="hero">
-        <SmartCover :src="playlist.coverUrl" :alt="playlist.name" :fallback-text="playlist.name" class="cover" />
+        <SmartCover
+          :src="playlist.coverUrl"
+          :alt="playlist.name"
+          :fallback-text="playlist.name"
+          placeholder-type="playlist"
+          class="cover"
+        />
         <div class="info">
           <p class="eyebrow">Playlist</p>
           <h2>{{ playlist.name }}</h2>

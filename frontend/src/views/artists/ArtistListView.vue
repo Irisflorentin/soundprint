@@ -42,6 +42,11 @@ async function loadFeaturedArtists() {
 onMounted(async () => {
   await Promise.all([loadFeaturedArtists(), loadArtists()]);
 });
+
+function onArtistSelect(artist: { id?: number }) {
+  if (artist.id == null) return;
+  router.push(`/artists/${artist.id}`);
+}
 </script>
 
 <template>
@@ -52,7 +57,7 @@ onMounted(async () => {
         <h2 class="hero-title">精选艺术家</h2>
       </div>
       <div class="gallery-container">
-        <SoundprintCircularGallery :items="featuredArtists" type="artist" />
+        <SoundprintCircularGallery :items="featuredArtists" type="artist" @select="onArtistSelect" />
       </div>
     </section>
 
@@ -95,6 +100,7 @@ onMounted(async () => {
             :src="artist.avatarUrl"
             :alt="artist.name"
             :fallback-text="artist.name"
+            placeholder-type="artist"
             rounded="circle"
             class="avatar"
           />

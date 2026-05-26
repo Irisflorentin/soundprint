@@ -3,27 +3,37 @@ import { computed, onBeforeUnmount, ref } from 'vue';
 import CircularGallery from '@/components/vue-bits/components/CircullarGallery.vue';
 import { fileUrl } from '@/utils/url';
 import { releaseWebglContexts } from '@/utils/webgl';
+import { placeholderImage } from '@/utils/placeholder';
 
 type GalleryType = 'album' | 'artist' | 'playlist';
+type GallerySourceItem = {
+  id?: number;
+  coverUrl?: string | null;
+  avatarUrl?: string | null;
+  title?: string | null;
+  name?: string | null;
+};
 
 const props = defineProps<{
-  items: Array<{
-    coverUrl?: string | null;
-    avatarUrl?: string | null;
-    title?: string | null;
-    name?: string | null;
-  }>;
+  items: GallerySourceItem[];
   type: GalleryType;
 }>();
 
-const root = ref<HTMLElement | null>(null);
+const emit = defineEmits<{
+  (e: 'select', item: GallerySourceItem, index: number): void;
+}>();
 
-const galleryItems = computed(() => props.items.slice(0, 15).map((item) => {
+const root = ref<HTMLElement | null>(null);
+const pointerStart = ref<{ x: number; y: number } | null>(null);
+
+const displayedItems = computed(() => props.items.slice(0, 15));
+
+const galleryItems = computed(() => displayedItems.value.map((item) => {
   const rawImage = item.coverUrl || item.avatarUrl || '';
+  const text = item.title || item.name || fallbackText(props.type);
   const image = rawImage
     ? toAbsoluteAssetUrl(rawImage)
-    : fallbackImage(props.type);
-  const text = item.title || item.name || fallbackText(props.type);
+    : fallbackImage(item, props.type);
 
   return { image, text };
 }));
@@ -46,28 +56,48 @@ function fallbackText(type: GalleryType) {
   return '未命名歌单';
 }
 
-function fallbackImage(type: GalleryType): string {
-  const symbol = type === 'album' ? 'AL' : type === 'artist' ? 'AR' : 'PL';
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
-    <defs>
-      <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#F4F5F7"/>
-        <stop offset="52%" stop-color="#94A3B8"/>
-        <stop offset="100%" stop-color="#C8A862"/>
-      </linearGradient>
-    </defs>
-    <rect width="600" height="400" fill="#15151A"/>
-    <rect width="600" height="400" fill="url(#g)" opacity="0.72"/>
-    <circle cx="470" cy="82" r="130" fill="#FFFFFF" opacity="0.08"/>
-    <text x="50%" y="52%" font-size="86" font-family="Inter, Arial, sans-serif" font-weight="700"
-      fill="white" text-anchor="middle" dominant-baseline="middle" opacity="0.92">${symbol}</text>
-  </svg>`;
-  return `data:image/svg+xml;base64,${btoa(svg)}`;
+function fallbackImage(item: GallerySourceItem, type: GalleryType): string {
+  return placeholderImage(item.title || item.name || fallbackText(type), type);
+}
+
+function rememberPointerStart(event: PointerEvent) {
+  pointerStart.value = { x: event.clientX, y: event.clientY };
+}
+
+function handleClick(event: MouseEvent) {
+  if (!root.value || displayedItems.value.length === 0) return;
+  if (pointerStart.value) {
+    const movedX = Math.abs(event.clientX - pointerStart.value.x);
+    const movedY = Math.abs(event.clientY - pointerStart.value.y);
+    pointerStart.value = null;
+    if (movedX > 8 || movedY > 8) return;
+  }
+
+  const rect = root.value.getBoundingClientRect();
+  if (rect.width <= 0) return;
+
+  const clickX = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
+  const ratio = clickX / rect.width;
+  const targetIndex = Math.min(
+    displayedItems.value.length - 1,
+    Math.floor(ratio * displayedItems.value.length)
+  );
+  const item = displayedItems.value[targetIndex];
+  if (!item) return;
+
+  emit('select', item, targetIndex);
 }
 </script>
 
 <template>
-  <div ref="root" class="gallery-wrap">
+  <div
+    ref="root"
+    class="gallery-wrap"
+    role="button"
+    tabindex="0"
+    @pointerdown="rememberPointerStart"
+    @click="handleClick"
+  >
     <CircularGallery
       :items="galleryItems"
       :bend="2"
@@ -86,6 +116,7 @@ function fallbackImage(type: GalleryType): string {
   height: 100%;
   overflow: hidden;
   border-radius: var(--radius-card);
+  cursor: pointer;
   background:
     radial-gradient(at 0% 0%, rgba(244, 245, 247, 0.08) 0%, transparent 48%),
     radial-gradient(at 100% 100%, rgba(200, 168, 98, 0.12) 0%, transparent 52%),
