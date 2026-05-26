@@ -7,10 +7,13 @@ import LoadingBlock from '@/components/common/LoadingBlock.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 import GlassCard from '@/components/common/GlassCard.vue';
 import SmartCover from '@/components/common/SmartCover.vue';
+import SoundprintCircularGallery from '@/components/common/SoundprintCircularGallery.vue';
 import { artistApi } from '@/api/artist';
+import { dashboardApi } from '@/api/dashboard';
 import type { Artist } from '@/types/artist';
 
 const router = useRouter();
+const featuredArtists = ref<Artist[]>([]);
 const artists = ref<Artist[]>([]);
 const loading = ref(false);
 const keyword = ref('');
@@ -31,67 +34,121 @@ async function loadArtists() {
   }
 }
 
-onMounted(loadArtists);
+async function loadFeaturedArtists() {
+  const dashboard = await dashboardApi.get();
+  featuredArtists.value = dashboard.featuredArtists || [];
+}
+
+onMounted(async () => {
+  await Promise.all([loadFeaturedArtists(), loadArtists()]);
+});
 </script>
 
 <template>
   <div class="artist-list-view">
-    <PageHeader
-      title="艺术家"
-      subtitle="按艺术家浏览曲目、专辑和风格"
-    >
-      <template #actions>
-        <el-input
-          v-model="keyword"
-          class="search"
-          placeholder="搜索艺术家"
-          :prefix-icon="Search"
-          clearable
-          @keyup.enter="loadArtists"
-          @clear="loadArtists"
-        />
-        <el-button :icon="Refresh" @click="loadArtists">刷新</el-button>
-      </template>
-    </PageHeader>
+    <section v-if="featuredArtists.length > 0" class="hero-section">
+      <div class="hero-label-row">
+        <span class="hero-label">FEATURED</span>
+        <h2 class="hero-title">精选艺术家</h2>
+      </div>
+      <div class="gallery-container">
+        <SoundprintCircularGallery :items="featuredArtists" type="artist" />
+      </div>
+    </section>
 
-    <LoadingBlock v-if="loading" text="正在加载艺术家..." />
-    <EmptyState
-      v-else-if="artists.length === 0"
-      title="暂无艺术家"
-      description="上传音乐或新建曲目后，这里会显示艺术家信息。"
-    />
-
-    <div v-else class="artist-grid">
-      <GlassCard
-        v-for="artist in artists"
-        :key="artist.id"
-        hoverable
-        padding="lg"
-        class="artist-card"
-        @click="router.push(`/artists/${artist.id}`)"
+    <section class="list-section">
+      <PageHeader
+        title="所有艺术家"
+        subtitle="按艺术家浏览曲目、专辑和风格"
       >
-        <SmartCover
-          :src="artist.avatarUrl"
-          :alt="artist.name"
-          :fallback-text="artist.name"
-          rounded="circle"
-          class="avatar"
-        />
-        <strong>{{ artist.name }}</strong>
-        <span>{{ artist.country || '未知地区' }}</span>
-        <small>{{ artist.formedYear ? `${artist.formedYear} 出道/成立` : '年份未知' }}</small>
-      </GlassCard>
-    </div>
+        <template #actions>
+          <el-input
+            v-model="keyword"
+            class="search"
+            placeholder="搜索艺术家"
+            :prefix-icon="Search"
+            clearable
+            @keyup.enter="loadArtists"
+            @clear="loadArtists"
+          />
+          <el-button :icon="Refresh" @click="loadArtists">刷新</el-button>
+        </template>
+      </PageHeader>
 
-    <p v-if="!loading && total > artists.length" class="footnote">
-      当前展示前 {{ artists.length }} 位，共 {{ total }} 位。
-    </p>
+      <LoadingBlock v-if="loading" text="正在加载艺术家..." />
+      <EmptyState
+        v-else-if="artists.length === 0"
+        title="暂无艺术家"
+        description="上传音乐或新建曲目后，这里会显示艺术家信息。"
+      />
+
+      <div v-else class="artist-grid">
+        <GlassCard
+          v-for="artist in artists"
+          :key="artist.id"
+          hoverable
+          padding="lg"
+          class="artist-card"
+          @click="router.push(`/artists/${artist.id}`)"
+        >
+          <SmartCover
+            :src="artist.avatarUrl"
+            :alt="artist.name"
+            :fallback-text="artist.name"
+            rounded="circle"
+            class="avatar"
+          />
+          <strong>{{ artist.name }}</strong>
+          <span>{{ artist.country || '未知地区' }}</span>
+          <small>{{ artist.formedYear ? `${artist.formedYear} 出道/成立` : '年份未知' }}</small>
+        </GlassCard>
+      </div>
+
+      <p v-if="!loading && total > artists.length" class="footnote">
+        当前展示前 {{ artists.length }} 位，共 {{ total }} 位。
+      </p>
+    </section>
   </div>
 </template>
 
 <style scoped lang="scss">
 .artist-list-view {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.hero-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.hero-label-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.hero-label {
+  color: var(--color-brand);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+}
+
+.hero-title {
+  margin: 0;
+  color: var(--color-fg-primary);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.gallery-container {
+  height: 420px;
+  overflow: hidden;
+  border-radius: var(--radius-card);
 }
 
 .search {

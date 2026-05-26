@@ -46,6 +46,8 @@ Soundprint 是一个面向音乐爱好者的个人音乐管理系统，支持：
 - [Vue.js](https://vuejs.org/) - 渐进式 JavaScript 框架（MIT）
 - [Element-Plus](https://element-plus.org/) - Vue 3 组件库（MIT）
 - [vue-bits](https://github.com/DavidHDev/vue-bits) - Vue 动效组件库（MIT + Commons Clause）
+- [OGL](https://github.com/oframe/ogl) - 轻量 WebGL 渲染库（MIT）
+- [Three.js](https://threejs.org/) - 3D/WebGL 渲染库（MIT）
 - [Spring Boot](https://spring.io/projects/spring-boot) - Java 应用框架（Apache 2.0）
 - [MyBatis-Plus](https://baomidou.com/) - MyBatis 增强工具（Apache 2.0）
 - [FFmpeg](https://ffmpeg.org/) - 音视频处理工具（LGPL/GPL）

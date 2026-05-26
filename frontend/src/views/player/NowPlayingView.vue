@@ -6,6 +6,7 @@ import { Close } from '@element-plus/icons-vue';
 import { usePlayerStore } from '@/stores/player';
 import { trackApi } from '@/api/track';
 import SmartCover from '@/components/common/SmartCover.vue';
+import SoundprintAntigravity from '@/components/common/SoundprintAntigravity.vue';
 import WaveformDisplay from '@/components/player/WaveformDisplay.vue';
 import LyricsPanel from '@/components/player/LyricsPanel.vue';
 
@@ -20,7 +21,7 @@ watch(currentTrack, async (track) => {
     return;
   }
   try {
-    lyrics.value = await trackApi.getLyrics(track.id);
+    lyrics.value = await trackApi.getLyrics(track.id) || '';
   } catch {
     lyrics.value = '';
   }
@@ -51,8 +52,11 @@ function close() {
       </section>
 
       <section class="info-section">
-        <WaveformDisplay class="waveform" />
-        <LyricsPanel :lyrics="lyrics" :current-time="currentTime" class="lyrics" />
+        <SoundprintAntigravity class="antigravity-bg" />
+        <div class="info-overlay">
+          <WaveformDisplay class="waveform" />
+          <LyricsPanel :lyrics="lyrics" :current-time="currentTime" class="lyrics" />
+        </div>
       </section>
     </div>
   </div>
@@ -76,13 +80,13 @@ function close() {
   position: absolute;
   top: var(--space-5);
   right: var(--space-5);
-  z-index: 10;
+  z-index: 200;
 }
 
 .content {
   max-width: 1400px;
   height: calc(100vh - var(--space-10));
-  margin: var(--space-8) auto 0;
+  margin: var(--space-5) auto 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
   gap: var(--space-8);
@@ -97,10 +101,14 @@ function close() {
 }
 
 .big-cover {
-  width: min(100%, 480px);
+  width: min(100%, 440px, calc(100vh - 250px));
+  min-width: 260px;
   aspect-ratio: 1;
   border-radius: 24px;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.5),
+    0 0 56px color-mix(in srgb, var(--color-brand) 28%, transparent),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .track-meta {
@@ -129,11 +137,32 @@ function close() {
 }
 
 .info-section {
+  position: relative;
   height: 100%;
   min-height: 540px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 24px;
+  background: rgba(10, 10, 20, 0.42);
+}
+
+.antigravity-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.72;
+}
+
+.info-overlay {
+  position: relative;
+  z-index: 10;
+  height: 100%;
+  padding: var(--space-5);
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  background: linear-gradient(180deg, rgba(10, 10, 20, 0.34), rgba(10, 10, 20, 0.68));
+  backdrop-filter: blur(2px);
 }
 
 .waveform {

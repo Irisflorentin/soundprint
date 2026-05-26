@@ -7,6 +7,7 @@ import LoadingBlock from '@/components/common/LoadingBlock.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 import GlassCard from '@/components/common/GlassCard.vue';
 import SmartCover from '@/components/common/SmartCover.vue';
+import SoundprintGalaxy from '@/components/common/SoundprintGalaxy.vue';
 import HorizontalShelf from '@/components/shelf/HorizontalShelf.vue';
 import { dashboardApi } from '@/api/dashboard';
 import type { Dashboard } from '@/types/dashboard';
@@ -61,15 +62,23 @@ onMounted(loadDashboard);
 
     <template v-else>
       <GlassCard padding="lg" class="hero">
+        <SoundprintGalaxy
+          class="hero-galaxy"
+          :transparent="true"
+          :density="0.8"
+          :glow-intensity="0.3"
+          :twinkle-intensity="0.4"
+          :rotation-speed="0.03"
+        />
         <div class="hero-copy">
           <p class="eyebrow">Soundprint Library</p>
           <h2>{{ dashboard.greeting || '欢迎回来' }}</h2>
           <p>从最近添加、播放历史和收藏中继续探索你的无损音乐库。</p>
         </div>
         <div class="hero-panel">
-          <span class="panel-label">Phase 7 视觉位</span>
-          <strong>Infinite Menu</strong>
-          <small>后续接入 vue-bits 球面菜单</small>
+          <span class="panel-label">VISUAL LAYER</span>
+          <strong>Galaxy</strong>
+          <small>紫色星空衬底</small>
         </div>
       </GlassCard>
 
@@ -204,18 +213,31 @@ onMounted(loadDashboard);
 }
 
 .hero {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 260px;
   gap: var(--space-6);
   align-items: center;
   margin-bottom: var(--space-6);
+  min-height: 240px;
+  overflow: hidden;
   background:
     radial-gradient(circle at 0% 0%, rgba(124, 58, 237, 0.28), transparent 42%),
     radial-gradient(circle at 100% 100%, rgba(6, 182, 212, 0.18), transparent 38%),
     rgba(255, 255, 255, 0.03);
 }
 
+.hero-galaxy {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.85;
+}
+
 .hero-copy {
+  position: relative;
+  z-index: 10;
+
   .eyebrow {
     margin: 0 0 var(--space-2);
     color: var(--color-brand);
@@ -239,6 +261,8 @@ onMounted(loadDashboard);
 }
 
 .hero-panel {
+  position: relative;
+  z-index: 10;
   min-height: 148px;
   border: 1px dashed rgba(124, 58, 237, 0.45);
   border-radius: var(--radius-card);

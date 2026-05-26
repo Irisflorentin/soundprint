@@ -4,6 +4,7 @@ import { ElMessage } from 'element-plus';
 import PageHeader from '@/components/common/PageHeader.vue';
 import LoadingBlock from '@/components/common/LoadingBlock.vue';
 import SmartCover from '@/components/common/SmartCover.vue';
+import SoundprintBalatro from '@/components/common/SoundprintBalatro.vue';
 import { trackApi } from '@/api/track';
 import { conversionApi } from '@/api/conversion';
 import type { Track } from '@/types/track';
@@ -23,6 +24,7 @@ const taskHistory = ref<ConversionTask[]>([]);
 const submitting = ref(false);
 
 let pollTimer: number | null = null;
+const ACTIVE_TASK_RECOVERY_WINDOW_MS = 30 * 60 * 1000;
 
 const formatOptions: { label: string; value: TargetFormat }[] = [
   { label: 'MP3（有损，体积小）', value: 'MP3' },
@@ -56,6 +58,22 @@ async function loadTracks() {
 async function loadHistory() {
   const result = await conversionApi.page({ page: 1, size: 20 });
   taskHistory.value = result.records;
+  const activeTask = result.records.find(isRecoverableActiveTask);
+  if (activeTask && (!currentTask.value || !isActiveTask(currentTask.value))) {
+    currentTask.value = activeTask;
+    startPolling();
+  }
+}
+
+function isActiveTask(task: ConversionTask) {
+  return task.status === 'PENDING' || task.status === 'RUNNING';
+}
+
+function isRecoverableActiveTask(task: ConversionTask) {
+  if (!isActiveTask(task)) return false;
+  const createdAt = new Date(task.createdAt).getTime();
+  if (Number.isNaN(createdAt)) return false;
+  return Date.now() - createdAt <= ACTIVE_TASK_RECOVERY_WINDOW_MS;
 }
 
 async function submit() {
@@ -188,24 +206,30 @@ function download(task: ConversionTask) {
         <h3>3. 进度 & 历史</h3>
 
         <div v-if="currentTask" class="current-task">
-          <div class="task-meta">
-            <span class="status" :class="`status-${currentTask.status.toLowerCase()}`">
-              {{ currentTask.status }}
-            </span>
-            <span>{{ currentTask.targetFormat }}</span>
-          </div>
-          <el-progress
-            :percentage="currentTask.progress"
-            :status="currentTask.status === 'SUCCESS' ? 'success' : currentTask.status === 'FAILED' ? 'exception' : undefined"
+          <SoundprintBalatro
+            v-if="currentTask.status === 'RUNNING'"
+            class="balatro-bg"
           />
-          <p v-if="currentTask.errorMessage" class="error-message">{{ currentTask.errorMessage }}</p>
-          <el-button
-            v-if="currentTask.status === 'SUCCESS'"
-            type="success"
-            @click="download(currentTask)"
-          >
-            下载
-          </el-button>
+          <div class="task-content">
+            <div class="task-meta">
+              <span class="status" :class="`status-${currentTask.status.toLowerCase()}`">
+                {{ currentTask.status }}
+              </span>
+              <span>{{ currentTask.targetFormat }}</span>
+            </div>
+            <el-progress
+              :percentage="currentTask.progress"
+              :status="currentTask.status === 'SUCCESS' ? 'success' : currentTask.status === 'FAILED' ? 'exception' : undefined"
+            />
+            <p v-if="currentTask.errorMessage" class="error-message">{{ currentTask.errorMessage }}</p>
+            <el-button
+              v-if="currentTask.status === 'SUCCESS'"
+              type="success"
+              @click="download(currentTask)"
+            >
+              下载
+            </el-button>
+          </div>
         </div>
 
         <el-divider>历史任务</el-divider>
@@ -313,10 +337,26 @@ section {
 }
 
 .current-task {
+  position: relative;
+  min-height: 140px;
+  overflow: hidden;
   margin-bottom: var(--space-4);
   padding: var(--space-4);
   border-radius: var(--radius-btn);
-  background: rgba(124, 58, 237, 0.08);
+  background: rgba(15, 15, 30, 0.5);
+}
+
+.balatro-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.62;
+  pointer-events: none;
+}
+
+.task-content {
+  position: relative;
+  z-index: 10;
 }
 
 .task-meta,
