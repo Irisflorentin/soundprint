@@ -4,6 +4,7 @@ import Galaxy from '@/components/vue-bits/backgrounds/Galaxy.vue';
 import { releaseWebglContexts } from '@/utils/webgl';
 
 withDefaults(defineProps<{
+  hueShift?: number;
   transparent?: boolean;
   density?: number;
   glowIntensity?: number;
@@ -13,12 +14,13 @@ withDefaults(defineProps<{
   mouseInteraction?: boolean;
   mouseRepulsion?: boolean;
 }>(), {
+  hueShift: 210,
   transparent: true,
   density: 0.9,
   glowIntensity: 0.35,
   twinkleIntensity: 0.45,
   rotationSpeed: 0.04,
-  saturation: 0.28,
+  saturation: 0.15,
   mouseInteraction: true,
   mouseRepulsion: true,
 });
@@ -34,7 +36,7 @@ onBeforeUnmount(() => {
   <div ref="root" class="soundprint-galaxy">
     <Galaxy
       class="galaxy-canvas"
-      :hue-shift="260"
+      :hue-shift="hueShift"
       :density="density"
       :glow-intensity="glowIntensity"
       :twinkle-intensity="twinkleIntensity"
@@ -55,6 +57,6 @@ onBeforeUnmount(() => {
 }
 
 .soundprint-galaxy {
-  filter: hue-rotate(28deg) saturate(0.78);
+  filter: saturate(0.92);
 }
 </style>

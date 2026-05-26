@@ -52,7 +52,9 @@ function animateTo(nextValue: number) {
 
 <style lang="scss" scoped>
 .kpi-card {
+  position: relative;
   min-width: 0;
+  overflow: hidden;
   display: flex;
   align-items: center;
   gap: var(--space-4);
@@ -60,7 +62,21 @@ function animateTo(nextValue: number) {
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-card);
   background: rgba(255, 255, 255, 0.035);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #F4F5F7, #94A3B8, #C8A862);
+  }
 }
+
+.accent-success::before { background: linear-gradient(90deg, #F4F5F7, #A3D9B1); }
+.accent-warning::before { background: linear-gradient(90deg, #F4F5F7, #C8A862); }
+.accent-accent::before  { background: linear-gradient(90deg, #F4F5F7, #94A3B8, #C8A862); }
 
 .icon {
   width: 44px;

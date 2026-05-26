@@ -45,7 +45,7 @@ watch(() => props.src, () => {
   overflow: hidden;
   display: grid;
   place-items: center;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.82), rgba(6, 182, 212, 0.68));
+  background: linear-gradient(135deg, rgba(244, 245, 247, 0.72), rgba(148, 163, 184, 0.62) 52%, rgba(200, 168, 98, 0.66));
 }
 
 .smart-cover.circle {

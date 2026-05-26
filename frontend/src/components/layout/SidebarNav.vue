@@ -106,9 +106,21 @@ function isActive(path: string) {
   }
 
   &.active {
-    background: rgba(124, 58, 237, 0.15);
-    color: var(--color-brand);
+    position: relative;
+    background: transparent;
+    color: var(--color-fg-primary);
     font-weight: 600;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      border-radius: 2px;
+      background: #C8A862;
+    }
   }
 }
 </style>

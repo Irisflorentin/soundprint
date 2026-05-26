@@ -65,9 +65,9 @@ onMounted(loadDashboard);
         <SoundprintGalaxy
           class="hero-galaxy"
           :transparent="true"
-          :density="0.8"
-          :glow-intensity="0.3"
-          :twinkle-intensity="0.4"
+          :density="0.9"
+          :glow-intensity="0.35"
+          :twinkle-intensity="0.45"
           :rotation-speed="0.03"
         />
         <div class="hero-copy">
@@ -78,7 +78,7 @@ onMounted(loadDashboard);
         <div class="hero-panel">
           <span class="panel-label">VISUAL LAYER</span>
           <strong>Galaxy</strong>
-          <small>紫色星空衬底</small>
+          <small>银白星空衬底</small>
         </div>
       </GlassCard>
 
@@ -222,8 +222,8 @@ onMounted(loadDashboard);
   min-height: 240px;
   overflow: hidden;
   background:
-    radial-gradient(circle at 0% 0%, rgba(124, 58, 237, 0.28), transparent 42%),
-    radial-gradient(circle at 100% 100%, rgba(6, 182, 212, 0.18), transparent 38%),
+    radial-gradient(circle at 0% 0%, rgba(244, 245, 247, 0.10), transparent 42%),
+    radial-gradient(circle at 100% 100%, rgba(200, 168, 98, 0.10), transparent 38%),
     rgba(255, 255, 255, 0.03);
 }
 
@@ -264,14 +264,14 @@ onMounted(loadDashboard);
   position: relative;
   z-index: 10;
   min-height: 148px;
-  border: 1px dashed rgba(124, 58, 237, 0.45);
+  border: 1px dashed rgba(200, 168, 98, 0.42);
   border-radius: var(--radius-card);
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: var(--space-2);
   padding: var(--space-5);
-  background: rgba(10, 10, 20, 0.35);
+  background: rgba(10, 10, 11, 0.35);
 
   .panel-label,
   small {

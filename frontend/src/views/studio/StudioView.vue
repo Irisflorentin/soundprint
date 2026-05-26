@@ -304,7 +304,7 @@ section {
 
   &.selected {
     border-color: var(--color-brand);
-    background: rgba(124, 58, 237, 0.15);
+    background: rgba(244, 245, 247, 0.08);
   }
 }
 
@@ -334,6 +334,26 @@ section {
 
 .submit-btn {
   width: 100%;
+  --el-button-text-color: #0A0A0B;
+  --el-button-bg-color: #C8A862;
+  --el-button-border-color: #C8A862;
+  --el-button-hover-text-color: #0A0A0B;
+  --el-button-hover-bg-color: #D4C5A0;
+  --el-button-hover-border-color: #D4C5A0;
+  --el-button-active-bg-color: #B8944D;
+  --el-button-active-border-color: #B8944D;
+  --el-button-disabled-text-color: rgba(10, 10, 11, 0.48);
+  --el-button-disabled-bg-color: rgba(200, 168, 98, 0.72);
+  --el-button-disabled-border-color: rgba(200, 168, 98, 0.18);
+  font-weight: 700;
+
+  &.is-disabled,
+  &.is-disabled:hover,
+  &.is-disabled:focus {
+    color: rgba(10, 10, 11, 0.56) !important;
+    background: rgba(200, 168, 98, 0.72) !important;
+    border-color: rgba(200, 168, 98, 0.18) !important;
+  }
 }
 
 .current-task {
@@ -343,7 +363,7 @@ section {
   margin-bottom: var(--space-4);
   padding: var(--space-4);
   border-radius: var(--radius-btn);
-  background: rgba(15, 15, 30, 0.5);
+  background: rgba(10, 10, 11, 0.58);
 }
 
 .balatro-bg {

@@ -53,10 +53,20 @@ const option = computed<EChartsOption>(() => ({
       data: props.data.map((item) => item.playCount),
       lineStyle: {
         width: 3,
-        color: SOUNDPRINT_CHART_COLORS.brand,
+        color: {
+          type: 'linear',
+          x: 0,
+          y: 0,
+          x2: 1,
+          y2: 0,
+          colorStops: [
+            { offset: 0, color: SOUNDPRINT_CHART_COLORS.brand },
+            { offset: 1, color: SOUNDPRINT_CHART_COLORS.info },
+          ],
+        },
       },
       itemStyle: {
-        color: SOUNDPRINT_CHART_COLORS.accent,
+        color: SOUNDPRINT_CHART_COLORS.brand,
       },
       areaStyle: {
         color: {

@@ -146,8 +146,12 @@ function goNowPlaying() {
   align-items: center;
   height: 88px;
   padding: 0 var(--space-5);
-  background: rgba(15, 15, 30, 0.92);
+  border-top: 1px solid rgba(200, 168, 98, 0.28);
+  background:
+    linear-gradient(90deg, rgba(10, 10, 11, 0.96), rgba(21, 21, 26, 0.94)),
+    rgba(10, 10, 11, 0.94);
   backdrop-filter: blur(20px);
+  box-shadow: 0 -18px 42px rgba(0, 0, 0, 0.28);
 }
 
 .placeholder {
@@ -225,6 +229,18 @@ function goNowPlaying() {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+
+  :deep(.el-button--primary) {
+    --el-button-text-color: #0A0A0B;
+    --el-button-bg-color: #F4F5F7;
+    --el-button-border-color: #F4F5F7;
+    --el-button-hover-text-color: #0A0A0B;
+    --el-button-hover-bg-color: #D4C5A0;
+    --el-button-hover-border-color: #D4C5A0;
+    --el-button-active-bg-color: #C8A862;
+    --el-button-active-border-color: #C8A862;
+    box-shadow: 0 0 24px rgba(200, 168, 98, 0.18);
+  }
 }
 
 .progress-row {
@@ -257,13 +273,13 @@ function goNowPlaying() {
 .progress-fill {
   display: block;
   height: 100%;
-  background: var(--color-brand);
+  background: linear-gradient(90deg, #F4F5F7 0%, #C8A862 100%);
   border-radius: inherit;
   transition: background var(--duration-base) var(--ease);
 }
 
 .progress-track:hover .progress-fill {
-  background: var(--color-brand-hover);
+  background: linear-gradient(90deg, #FFFFFF 0%, #D4C5A0 100%);
 }
 
 .right {
@@ -275,19 +291,22 @@ function goNowPlaying() {
 
 .volume-slider {
   width: 84px;
-  --el-slider-main-bg-color: var(--color-brand);
+  --el-slider-main-bg-color: #C8A862;
+  --el-slider-runway-bg-color: rgba(255, 255, 255, 0.14);
+  --el-slider-button-bg-color: #F4F5F7;
+  --el-slider-button-border-color: #D4C5A0;
 }
 
 .badge-1 {
   position: absolute;
   top: 2px;
   right: 2px;
-  color: var(--color-brand);
+  color: #D4C5A0;
   font-size: 9px;
 }
 
 .active :deep(.el-icon) {
-  color: var(--color-brand);
+  color: #D4C5A0;
 }
 
 @media (max-width: 900px) {

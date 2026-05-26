@@ -73,7 +73,10 @@ function close() {
   inset: 0;
   z-index: 100;
   padding: var(--space-6);
-  background: radial-gradient(circle at 30% 30%, #1A1530 0%, #0A0A14 60%);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(244, 245, 247, 0.08), transparent 34%),
+    radial-gradient(circle at 86% 82%, rgba(200, 168, 98, 0.16), transparent 40%),
+    linear-gradient(135deg, #0A0A0B 0%, #101014 54%, #080809 100%);
 }
 
 .close-btn {
@@ -107,7 +110,8 @@ function close() {
   border-radius: 24px;
   box-shadow:
     0 24px 64px rgba(0, 0, 0, 0.5),
-    0 0 56px color-mix(in srgb, var(--color-brand) 28%, transparent),
+    0 0 58px rgba(200, 168, 98, 0.18),
+    0 0 26px rgba(244, 245, 247, 0.10),
     0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
@@ -120,6 +124,7 @@ function close() {
     color: var(--color-fg-primary);
     font-size: 36px;
     font-weight: 700;
+    text-shadow: 0 0 28px rgba(244, 245, 247, 0.12);
   }
 
   p {
@@ -141,9 +146,14 @@ function close() {
   height: 100%;
   min-height: 540px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(200, 168, 98, 0.16);
   border-radius: 24px;
-  background: rgba(10, 10, 20, 0.42);
+  background:
+    linear-gradient(180deg, rgba(21, 21, 26, 0.62), rgba(10, 10, 11, 0.84)),
+    rgba(10, 10, 11, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(244, 245, 247, 0.04),
+    0 24px 80px rgba(0, 0, 0, 0.34);
 }
 
 .antigravity-bg {
@@ -161,7 +171,9 @@ function close() {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-  background: linear-gradient(180deg, rgba(10, 10, 20, 0.34), rgba(10, 10, 20, 0.68));
+  background:
+    linear-gradient(180deg, rgba(10, 10, 11, 0.30), rgba(10, 10, 11, 0.68)),
+    radial-gradient(circle at 72% 18%, rgba(200, 168, 98, 0.08), transparent 34%);
   backdrop-filter: blur(2px);
 }
 

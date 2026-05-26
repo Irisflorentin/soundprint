@@ -54,7 +54,7 @@ function syncLoading() {
     chart.value.showLoading('default', {
       text: '',
       color: SOUNDPRINT_CHART_COLORS.brand,
-      maskColor: 'rgba(15, 15, 30, 0.35)',
+      maskColor: 'rgba(21, 21, 26, 0.35)',
     });
   } else {
     chart.value.hideLoading();

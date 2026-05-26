@@ -14,18 +14,21 @@ onBeforeUnmount(() => {
   <div ref="root" class="soundprint-antigravity">
     <Antigravity
       class="antigravity-canvas"
-      :count="200"
-      :magnet-radius="8"
-      :ring-radius="6"
-      :particle-size="1.5"
-      color="#7C3AED"
+      :count="350"
+      :magnet-radius="14"
+      :ring-radius="10"
+      :particle-size="1.8"
+      :lerp-speed="0.1"
+      color="#CBD5E1"
       :auto-animate="true"
-      :wave-speed="0.3"
-      :wave-amplitude="0.8"
-      :rotation-speed="0.05"
-      :depth-factor="1.2"
+      :wave-speed="0.35"
+      :wave-amplitude="1.2"
+      :rotation-speed="0.08"
+      :depth-factor="1.4"
       :pulse-speed="2"
       particle-shape="capsule"
+      :field-strength="12"
+      :particle-variance="1.2"
     />
   </div>
 </template>

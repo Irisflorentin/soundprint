@@ -74,9 +74,9 @@ watch(activeIndex, async () => {
   height: 100%;
   overflow-y: auto;
   padding: var(--space-5);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(200, 168, 98, 0.12);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(10, 10, 11, 0.24);
   text-align: center;
 
   &::-webkit-scrollbar {
@@ -101,6 +101,7 @@ watch(activeIndex, async () => {
   color: var(--color-fg-primary);
   font-size: 20px;
   font-weight: 600;
+  text-shadow: 0 0 24px rgba(244, 245, 247, 0.4);
   transform: scale(1.05);
 }
 </style>

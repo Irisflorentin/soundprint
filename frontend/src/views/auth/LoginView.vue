@@ -28,10 +28,10 @@ function handleLogin() {
       class="galaxy-bg"
       :transparent="false"
       :density="1.2"
-      :glow-intensity="0.4"
-      :twinkle-intensity="0.5"
-      :rotation-speed="0.05"
-      :saturation="0.24"
+      :glow-intensity="0.45"
+      :twinkle-intensity="0.55"
+      :rotation-speed="0.04"
+      :saturation="0.15"
     />
     <div class="brand-tint" />
 
@@ -57,10 +57,8 @@ function handleLogin() {
         :loading="loading"
         @click="handleLogin"
       >
-        进入音乐空间
+        Enter Soundprint
       </el-button>
-
-      <p class="hint">演示账号已预设，任意密码即可登录</p>
     </div>
   </div>
 </template>
@@ -86,9 +84,9 @@ function handleLogin() {
   z-index: 1;
   pointer-events: none;
   background:
-    radial-gradient(circle at 22% 18%, rgba(124, 58, 237, 0.22), transparent 32%),
-    radial-gradient(circle at 78% 72%, rgba(6, 182, 212, 0.14), transparent 36%),
-    rgba(10, 10, 20, 0.18);
+    radial-gradient(circle at 22% 18%, rgba(244, 245, 247, 0.12), transparent 32%),
+    radial-gradient(circle at 78% 72%, rgba(200, 168, 98, 0.10), transparent 36%),
+    rgba(10, 10, 11, 0.18);
 }
 
 .login-card {
@@ -99,14 +97,17 @@ function handleLogin() {
   width: min(calc(100vw - 32px), 400px);
   padding: var(--space-8);
   transform: translate(-50%, -50%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(244, 245, 247, 0.12);
   border-radius: 24px;
-  background: rgba(15, 15, 30, 0.6);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
+  background:
+    linear-gradient(180deg, rgba(21, 21, 26, 0.54), rgba(10, 10, 11, 0.42)),
+    rgba(10, 10, 11, 0.18);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
   box-shadow:
-    0 24px 80px rgba(0, 0, 0, 0.5),
-    0 0 0 1px color-mix(in srgb, var(--color-brand) 10%, transparent);
+    0 22px 70px rgba(0, 0, 0, 0.42),
+    0 0 42px rgba(200, 168, 98, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   text-align: center;
 }
 
@@ -140,8 +141,18 @@ function handleLogin() {
   width: 100%;
   height: 48px;
   margin-top: var(--space-2);
+  border: 0;
+  color: var(--color-bg-base);
   font-size: 16px;
-}
+  font-weight: 700;
+  background: var(--brand-gradient);
+  box-shadow: var(--shadow-glow-gold);
 
-.hint { margin-top: var(--space-5); font-size: 12px; color: var(--color-fg-tertiary); }
+  &:hover,
+  &:focus {
+    color: var(--color-bg-base);
+    background: var(--brand-gradient);
+    filter: brightness(1.06);
+  }
+}
 </style>

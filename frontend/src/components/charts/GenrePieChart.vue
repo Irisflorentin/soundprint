@@ -47,6 +47,14 @@ const option = computed<EChartsOption>(() => ({
           color: 'rgba(255, 255, 255, 0.18)',
         },
       },
+      emphasis: {
+        scale: true,
+        scaleSize: 8,
+        itemStyle: {
+          shadowBlur: 24,
+          shadowColor: 'rgba(200, 168, 98, 0.5)',
+        },
+      },
       data: props.data.map((item) => ({
         name: item.genre || '未分类',
         value: item.count,

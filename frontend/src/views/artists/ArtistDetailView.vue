@@ -246,7 +246,7 @@ h3 {
   cursor: pointer;
 
   &:hover {
-    background: rgba(124, 58, 237, 0.08);
+    background: rgba(244, 245, 247, 0.04);
   }
 }
 

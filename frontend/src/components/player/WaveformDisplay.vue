@@ -16,9 +16,9 @@ onMounted(() => {
   if (!container.value) return;
   wavesurfer = WaveSurfer.create({
     container: container.value,
-    waveColor: 'rgba(124, 58, 237, 0.4)',
-    progressColor: '#7C3AED',
-    cursorColor: '#06B6D4',
+    waveColor: 'rgba(244, 245, 247, 0.34)',
+    progressColor: '#F4F5F7',
+    cursorColor: '#C8A862',
     barWidth: 2,
     barGap: 2,
     barRadius: 2,
@@ -81,9 +81,11 @@ async function loadCurrentTrack() {
 .waveform-wrapper {
   width: 100%;
   padding: var(--space-3);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(200, 168, 98, 0.14);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
+  background:
+    linear-gradient(180deg, rgba(244, 245, 247, 0.045), rgba(255, 255, 255, 0.015)),
+    rgba(10, 10, 11, 0.30);
 }
 
 .waveform-canvas {

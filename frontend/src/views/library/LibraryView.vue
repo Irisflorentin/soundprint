@@ -256,7 +256,7 @@ onMounted(() => {
           </el-table-column>
           <el-table-column label="格式" width="90">
             <template #default="{ row }">
-              <el-tag size="small" effect="dark">{{ row.format }}</el-tag>
+              <el-tag size="small" effect="dark" class="format-tag">{{ row.format }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column label="操作" width="150" fixed="right">
@@ -269,7 +269,14 @@ onMounted(() => {
                 :class="{ 'is-fav': row.favorited }"
                 @click.stop="toggleFavorite(row)"
               />
-              <el-button :icon="Delete" circle size="small" type="danger" @click.stop="removeTrack(row)" />
+              <el-button
+                :icon="Delete"
+                circle
+                size="small"
+                type="danger"
+                class="delete-action"
+                @click.stop="removeTrack(row)"
+              />
             </template>
           </el-table-column>
         </el-table>
@@ -368,7 +375,25 @@ onMounted(() => {
 
 :deep(.is-fav) {
   color: var(--color-brand);
-  border-color: rgba(124, 58, 237, 0.5);
+  border-color: rgba(244, 245, 247, 0.38);
+}
+
+:deep(.format-tag) {
+  --el-tag-bg-color: rgba(200, 168, 98, 0.18);
+  --el-tag-border-color: rgba(200, 168, 98, 0.32);
+  --el-tag-text-color: #D4C5A0;
+  font-weight: 700;
+}
+
+:deep(.delete-action) {
+  --el-button-text-color: #D4C5A0;
+  --el-button-bg-color: rgba(200, 168, 98, 0.12);
+  --el-button-border-color: rgba(200, 168, 98, 0.34);
+  --el-button-hover-text-color: #0A0A0B;
+  --el-button-hover-bg-color: #C8A862;
+  --el-button-hover-border-color: #C8A862;
+  --el-button-active-bg-color: #D4C5A0;
+  --el-button-active-border-color: #D4C5A0;
 }
 
 @media (max-width: 1100px) {

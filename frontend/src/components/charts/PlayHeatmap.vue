@@ -14,7 +14,6 @@ const props = defineProps<{
 const option = computed<EChartsOption>(() => {
   const end = dayjs();
   const start = end.subtract(364, 'day');
-  const max = Math.max(1, ...props.data.map((item) => item.count));
 
   return {
     title: {
@@ -33,17 +32,15 @@ const option = computed<EChartsOption>(() => {
       },
     },
     visualMap: {
-      min: 0,
-      max,
+      type: 'piecewise',
       show: false,
-      inRange: {
-        color: [
-          SOUNDPRINT_CHART_COLORS.heatmapEmpty,
-          SOUNDPRINT_CHART_COLORS.heatmapLow,
-          SOUNDPRINT_CHART_COLORS.heatmapMid,
-          SOUNDPRINT_CHART_COLORS.success,
-        ],
-      },
+      pieces: [
+        { min: 0, max: 0, color: SOUNDPRINT_CHART_COLORS.heatmapEmpty },
+        { min: 1, max: 2, color: SOUNDPRINT_CHART_COLORS.heatmapLow },
+        { min: 3, max: 5, color: SOUNDPRINT_CHART_COLORS.heatmapMid },
+        { min: 6, max: 10, color: SOUNDPRINT_CHART_COLORS.heatmapHigh },
+        { min: 11, max: 9999, color: SOUNDPRINT_CHART_COLORS.accent },
+      ],
     },
     calendar: {
       top: 58,

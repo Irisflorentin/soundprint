@@ -155,7 +155,14 @@ async function addSelectedTrack() {
                 <small>{{ element.artistName || '未知艺术家' }} · {{ element.albumTitle || '未知专辑' }}</small>
               </button>
               <span class="duration">{{ formatDuration(element.duration) }}</span>
-              <el-button :icon="Delete" circle size="small" type="danger" @click="removeTrack(element)" />
+              <el-button
+                :icon="Delete"
+                circle
+                size="small"
+                type="danger"
+                class="delete-action"
+                @click="removeTrack(element)"
+              />
             </div>
           </template>
         </draggable>
@@ -302,6 +309,17 @@ h2 {
 
 .track-select {
   width: 100%;
+}
+
+:deep(.delete-action) {
+  --el-button-text-color: #D4C5A0;
+  --el-button-bg-color: rgba(200, 168, 98, 0.12);
+  --el-button-border-color: rgba(200, 168, 98, 0.34);
+  --el-button-hover-text-color: #0A0A0B;
+  --el-button-hover-bg-color: #C8A862;
+  --el-button-hover-border-color: #C8A862;
+  --el-button-active-bg-color: #D4C5A0;
+  --el-button-active-border-color: #D4C5A0;
 }
 
 @media (max-width: 820px) {

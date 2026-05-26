@@ -197,7 +197,7 @@ h2 {
   cursor: pointer;
 
   &:hover {
-    background: rgba(124, 58, 237, 0.08);
+    background: rgba(244, 245, 247, 0.04);
   }
 }
 
@@ -251,7 +251,7 @@ h2 {
 
 :deep(.is-fav) {
   color: var(--color-brand);
-  border-color: rgba(124, 58, 237, 0.5);
+  border-color: rgba(244, 245, 247, 0.38);
 }
 
 @media (max-width: 880px) {

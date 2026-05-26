@@ -51,12 +51,13 @@ function fallbackImage(type: GalleryType): string {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
     <defs>
       <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#7C3AED"/>
-        <stop offset="100%" stop-color="#06B6D4"/>
+        <stop offset="0%" stop-color="#F4F5F7"/>
+        <stop offset="52%" stop-color="#94A3B8"/>
+        <stop offset="100%" stop-color="#C8A862"/>
       </linearGradient>
     </defs>
-    <rect width="600" height="400" fill="#0F0F1E"/>
-    <rect width="600" height="400" fill="url(#g)" opacity="0.82"/>
+    <rect width="600" height="400" fill="#15151A"/>
+    <rect width="600" height="400" fill="url(#g)" opacity="0.72"/>
     <circle cx="470" cy="82" r="130" fill="#FFFFFF" opacity="0.08"/>
     <text x="50%" y="52%" font-size="86" font-family="Inter, Arial, sans-serif" font-weight="700"
       fill="white" text-anchor="middle" dominant-baseline="middle" opacity="0.92">${symbol}</text>
@@ -70,7 +71,7 @@ function fallbackImage(type: GalleryType): string {
     <CircularGallery
       :items="galleryItems"
       :bend="2"
-      text-color="#F5F5F7"
+      text-color="#F4F5F7"
       :border-radius="0.04"
       font="bold 22px Inter"
       :scroll-speed="2.5"
@@ -86,8 +87,8 @@ function fallbackImage(type: GalleryType): string {
   overflow: hidden;
   border-radius: var(--radius-card);
   background:
-    radial-gradient(at 0% 0%, rgba(124, 58, 237, 0.18) 0%, transparent 48%),
-    radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.12) 0%, transparent 52%),
-    rgba(15, 15, 30, 0.72);
+    radial-gradient(at 0% 0%, rgba(244, 245, 247, 0.08) 0%, transparent 48%),
+    radial-gradient(at 100% 100%, rgba(200, 168, 98, 0.12) 0%, transparent 52%),
+    rgba(21, 21, 26, 0.72);
 }
 </style>
