@@ -6,6 +6,8 @@ import PageHeader from '@/components/common/PageHeader.vue';
 import LoadingBlock from '@/components/common/LoadingBlock.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 import GlassCard from '@/components/common/GlassCard.vue';
+import SmartCover from '@/components/common/SmartCover.vue';
+import SoundprintGalaxy from '@/components/common/SoundprintGalaxy.vue';
 import HorizontalShelf from '@/components/shelf/HorizontalShelf.vue';
 import { dashboardApi } from '@/api/dashboard';
 import type { Dashboard } from '@/types/dashboard';
@@ -30,8 +32,9 @@ async function loadDashboard() {
   }
 }
 
-function playTrack(track: Track) {
-  playerStore.play(track);
+function playTrack(track: Track, queue: Track[]) {
+  const index = queue.findIndex((item) => item.id === track.id);
+  playerStore.playTrack(track, queue, index);
 }
 
 function cardCover(track: Track | PlayHistoryItem) {
@@ -59,15 +62,23 @@ onMounted(loadDashboard);
 
     <template v-else>
       <GlassCard padding="lg" class="hero">
+        <SoundprintGalaxy
+          class="hero-galaxy"
+          :transparent="true"
+          :density="0.9"
+          :glow-intensity="0.35"
+          :twinkle-intensity="0.45"
+          :rotation-speed="0.03"
+        />
         <div class="hero-copy">
           <p class="eyebrow">Soundprint Library</p>
           <h2>{{ dashboard.greeting || '欢迎回来' }}</h2>
           <p>从最近添加、播放历史和收藏中继续探索你的无损音乐库。</p>
         </div>
         <div class="hero-panel">
-          <span class="panel-label">Phase 7 视觉位</span>
-          <strong>Infinite Menu</strong>
-          <small>后续接入 vue-bits 球面菜单</small>
+          <span class="panel-label">VISUAL LAYER</span>
+          <strong>Galaxy</strong>
+          <small>银白星空衬底</small>
         </div>
       </GlassCard>
 
@@ -78,11 +89,16 @@ onMounted(loadDashboard);
           hoverable
           padding="none"
           class="track-card"
-          @click="playTrack(track)"
+          @click="playTrack(track, dashboard.recentTracks)"
         >
-          <div class="cover" :style="cardCover(track) ? { backgroundImage: `url(${cardCover(track)})` } : undefined">
+          <SmartCover
+            :src="cardCover(track)"
+            :alt="track.title"
+            :fallback-text="track.title"
+            class="cover"
+          >
             <el-icon class="play-icon"><VideoPlay /></el-icon>
-          </div>
+          </SmartCover>
           <div class="card-body">
             <strong>{{ track.title }}</strong>
             <span>{{ track.artistName || '未知艺术家' }}</span>
@@ -100,7 +116,12 @@ onMounted(loadDashboard);
           class="track-card"
           @click="router.push('/library')"
         >
-          <div class="cover" :style="cardCover(item) ? { backgroundImage: `url(${cardCover(item)})` } : undefined" />
+          <SmartCover
+            :src="cardCover(item)"
+            :alt="item.title"
+            :fallback-text="item.title"
+            class="cover"
+          />
           <div class="card-body">
             <strong>{{ item.title }}</strong>
             <span>{{ item.artistName || '未知艺术家' }}</span>
@@ -116,11 +137,16 @@ onMounted(loadDashboard);
           hoverable
           padding="none"
           class="track-card"
-          @click="playTrack(track)"
+          @click="playTrack(track, dashboard.favorites)"
         >
-          <div class="cover" :style="cardCover(track) ? { backgroundImage: `url(${cardCover(track)})` } : undefined">
+          <SmartCover
+            :src="cardCover(track)"
+            :alt="track.title"
+            :fallback-text="track.title"
+            class="cover"
+          >
             <el-icon class="play-icon"><VideoPlay /></el-icon>
-          </div>
+          </SmartCover>
           <div class="card-body">
             <strong>{{ track.title }}</strong>
             <span>{{ track.artistName || '未知艺术家' }}</span>
@@ -139,7 +165,12 @@ onMounted(loadDashboard);
               class="mini-item"
               @click="router.push(`/albums/${album.id}`)"
             >
-              <span class="mini-cover" />
+              <SmartCover
+                :src="album.coverUrl"
+                :alt="album.title"
+                :fallback-text="album.title"
+                class="mini-cover"
+              />
               <span>
                 <strong>{{ album.title }}</strong>
                 <small>{{ album.artistName || album.genre || '未知艺术家' }}</small>
@@ -157,7 +188,13 @@ onMounted(loadDashboard);
               class="mini-item"
               @click="router.push(`/artists/${artist.id}`)"
             >
-              <span class="avatar">{{ artist.name.slice(0, 1) }}</span>
+              <SmartCover
+                :src="artist.avatarUrl"
+                :alt="artist.name"
+                :fallback-text="artist.name"
+                rounded="circle"
+                class="avatar"
+              />
               <span>
                 <strong>{{ artist.name }}</strong>
                 <small>{{ artist.country || '未知地区' }}</small>
@@ -176,18 +213,31 @@ onMounted(loadDashboard);
 }
 
 .hero {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 260px;
   gap: var(--space-6);
   align-items: center;
   margin-bottom: var(--space-6);
+  min-height: 240px;
+  overflow: hidden;
   background:
-    radial-gradient(circle at 0% 0%, rgba(124, 58, 237, 0.28), transparent 42%),
-    radial-gradient(circle at 100% 100%, rgba(6, 182, 212, 0.18), transparent 38%),
+    radial-gradient(circle at 0% 0%, rgba(244, 245, 247, 0.10), transparent 42%),
+    radial-gradient(circle at 100% 100%, rgba(200, 168, 98, 0.10), transparent 38%),
     rgba(255, 255, 255, 0.03);
 }
 
+.hero-galaxy {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.85;
+}
+
 .hero-copy {
+  position: relative;
+  z-index: 10;
+
   .eyebrow {
     margin: 0 0 var(--space-2);
     color: var(--color-brand);
@@ -211,15 +261,17 @@ onMounted(loadDashboard);
 }
 
 .hero-panel {
+  position: relative;
+  z-index: 10;
   min-height: 148px;
-  border: 1px dashed rgba(124, 58, 237, 0.45);
+  border: 1px dashed rgba(200, 168, 98, 0.42);
   border-radius: var(--radius-card);
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: var(--space-2);
   padding: var(--space-5);
-  background: rgba(10, 10, 20, 0.35);
+  background: rgba(10, 10, 11, 0.35);
 
   .panel-label,
   small {
@@ -242,10 +294,6 @@ onMounted(loadDashboard);
 .cover {
   position: relative;
   aspect-ratio: 1;
-  background:
-    linear-gradient(135deg, rgba(124, 58, 237, 0.85), rgba(6, 182, 212, 0.72));
-  background-position: center;
-  background-size: cover;
 
   .play-icon {
     position: absolute;
@@ -353,11 +401,6 @@ onMounted(loadDashboard);
   height: 42px;
   flex: 0 0 42px;
   border-radius: 10px;
-  display: grid;
-  place-items: center;
-  color: var(--color-fg-primary);
-  font-weight: 700;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.72), rgba(6, 182, 212, 0.62));
 }
 
 .avatar {

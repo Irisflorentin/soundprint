@@ -1,6 +1,6 @@
 import client from './client';
 import type { PageResult } from './types';
-import type { Track, TrackDetail, TrackQuery, TrackUpdate } from '@/types/track';
+import type { Track, TrackDetail, TrackPeaks, TrackQuery, TrackUpdate } from '@/types/track';
 
 export const trackApi = {
   page: (query: TrackQuery): Promise<PageResult<Track>> =>
@@ -31,6 +31,9 @@ export const trackApi = {
 
   getLyrics: (id: number): Promise<string> =>
     client.get(`/tracks/${id}/lyrics`),
+
+  peaks: (id: number, samples = 1000): Promise<TrackPeaks> =>
+    client.get(`/tracks/${id}/peaks`, { params: { samples } }),
 
   updateLyrics: (id: number, lyrics: string): Promise<void> =>
     client.put(`/tracks/${id}/lyrics`, lyrics, {

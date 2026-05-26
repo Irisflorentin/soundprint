@@ -1,6 +1,7 @@
 import type { Track } from './track';
 import type { Album } from './album';
 import type { Artist } from './artist';
+import type { Playlist } from './playlist';
 import type { PlayHistoryItem } from './playHistory';
 
 export interface Dashboard {
@@ -10,4 +11,5 @@ export interface Dashboard {
   favorites: Track[];
   featuredAlbums: Album[];
   featuredArtists: Artist[];
+  featuredPlaylists: Playlist[];
 }

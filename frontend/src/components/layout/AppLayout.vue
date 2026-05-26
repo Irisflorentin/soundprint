@@ -44,7 +44,7 @@ const hideChrome = computed(() => route.meta.hideChrome === true);
 
 .sidebar    { grid-area: sidebar; border-right: 1px solid rgba(255,255,255,0.05); }
 .main-area  { grid-area: main; display: flex; flex-direction: column; overflow: hidden; }
-.player-bar { grid-area: player; border-top: 1px solid rgba(255,255,255,0.05); }
+.player-bar { grid-area: player; border-top: 1px solid rgba(200,168,98,0.28); }
 
 .top-bar    { flex-shrink: 0; height: 64px; }
 .content    { flex: 1; overflow-y: auto; padding: var(--space-6); }

@@ -6,10 +6,14 @@ import PageHeader from '@/components/common/PageHeader.vue';
 import LoadingBlock from '@/components/common/LoadingBlock.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 import GlassCard from '@/components/common/GlassCard.vue';
+import SmartCover from '@/components/common/SmartCover.vue';
+import SoundprintCircularGallery from '@/components/common/SoundprintCircularGallery.vue';
 import { albumApi } from '@/api/album';
+import { dashboardApi } from '@/api/dashboard';
 import type { Album } from '@/types/album';
 
 const router = useRouter();
+const featuredAlbums = ref<Album[]>([]);
 const albums = ref<Album[]>([]);
 const loading = ref(false);
 const keyword = ref('');
@@ -30,68 +34,122 @@ async function loadAlbums() {
   }
 }
 
-onMounted(loadAlbums);
+async function loadFeaturedAlbums() {
+  const dashboard = await dashboardApi.get();
+  featuredAlbums.value = dashboard.featuredAlbums || [];
+}
+
+onMounted(async () => {
+  await Promise.all([loadFeaturedAlbums(), loadAlbums()]);
+});
 </script>
 
 <template>
   <div class="album-list-view">
-    <PageHeader
-      title="专辑"
-      subtitle="按专辑浏览音乐库"
-    >
-      <template #actions>
-        <el-input
-          v-model="keyword"
-          class="search"
-          placeholder="搜索专辑"
-          :prefix-icon="Search"
-          clearable
-          @keyup.enter="loadAlbums"
-          @clear="loadAlbums"
-        />
-        <el-button :icon="Refresh" @click="loadAlbums">刷新</el-button>
-      </template>
-    </PageHeader>
+    <section v-if="featuredAlbums.length > 0" class="hero-section">
+      <div class="hero-label-row">
+        <span class="hero-label">FEATURED</span>
+        <h2 class="hero-title">精选专辑</h2>
+      </div>
+      <div class="gallery-container">
+        <SoundprintCircularGallery :items="featuredAlbums" type="album" />
+      </div>
+    </section>
 
-    <LoadingBlock v-if="loading" text="正在加载专辑..." />
-    <EmptyState
-      v-else-if="albums.length === 0"
-      title="暂无专辑"
-      description="上传音乐后，系统会根据元数据建立专辑信息。"
-    />
-
-    <div v-else class="album-grid">
-      <GlassCard
-        v-for="album in albums"
-        :key="album.id"
-        hoverable
-        padding="none"
-        class="album-card"
-        @click="router.push(`/albums/${album.id}`)"
+    <section class="list-section">
+      <PageHeader
+        title="所有专辑"
+        subtitle="按专辑浏览音乐库"
       >
-        <div
-          class="cover"
-          :style="album.coverUrl ? { backgroundImage: `url(${album.coverUrl})` } : undefined"
-        >
-          <span v-if="!album.coverUrl">{{ album.title.slice(0, 1) }}</span>
-        </div>
-        <div class="body">
-          <strong>{{ album.title }}</strong>
-          <span>{{ album.artistName || '未知艺术家' }}</span>
-          <small>{{ album.releaseYear || '未知年份' }} · {{ album.genre || '未分类' }}</small>
-        </div>
-      </GlassCard>
-    </div>
+        <template #actions>
+          <el-input
+            v-model="keyword"
+            class="search"
+            placeholder="搜索专辑"
+            :prefix-icon="Search"
+            clearable
+            @keyup.enter="loadAlbums"
+            @clear="loadAlbums"
+          />
+          <el-button :icon="Refresh" @click="loadAlbums">刷新</el-button>
+        </template>
+      </PageHeader>
 
-    <p v-if="!loading && total > albums.length" class="footnote">
-      当前展示前 {{ albums.length }} 张，共 {{ total }} 张。
-    </p>
+      <LoadingBlock v-if="loading" text="正在加载专辑..." />
+      <EmptyState
+        v-else-if="albums.length === 0"
+        title="暂无专辑"
+        description="上传音乐后，系统会根据元数据建立专辑信息。"
+      />
+
+      <div v-else class="album-grid">
+        <GlassCard
+          v-for="album in albums"
+          :key="album.id"
+          hoverable
+          padding="none"
+          class="album-card"
+          @click="router.push(`/albums/${album.id}`)"
+        >
+          <SmartCover
+            :src="album.coverUrl"
+            :alt="album.title"
+            :fallback-text="album.title"
+            class="cover"
+          />
+          <div class="body">
+            <strong>{{ album.title }}</strong>
+            <span>{{ album.artistName || '未知艺术家' }}</span>
+            <small>{{ album.releaseYear || '未知年份' }} · {{ album.genre || '未分类' }}</small>
+          </div>
+        </GlassCard>
+      </div>
+
+      <p v-if="!loading && total > albums.length" class="footnote">
+        当前展示前 {{ albums.length }} 张，共 {{ total }} 张。
+      </p>
+    </section>
   </div>
 </template>
 
 <style scoped lang="scss">
 .album-list-view {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.hero-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.hero-label-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.hero-label {
+  color: var(--color-brand);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+}
+
+.hero-title {
+  margin: 0;
+  color: var(--color-fg-primary);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.gallery-container {
+  height: 420px;
+  overflow: hidden;
+  border-radius: var(--radius-card);
 }
 
 .search {
@@ -110,15 +168,6 @@ onMounted(loadAlbums);
 
 .cover {
   aspect-ratio: 1;
-  display: grid;
-  place-items: center;
-  color: var(--color-fg-primary);
-  font-size: 42px;
-  font-weight: 800;
-  background:
-    linear-gradient(135deg, rgba(124, 58, 237, 0.8), rgba(6, 182, 212, 0.68));
-  background-position: center;
-  background-size: cover;
 }
 
 .body {

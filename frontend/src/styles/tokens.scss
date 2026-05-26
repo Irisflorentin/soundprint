@@ -1,19 +1,32 @@
 :root {
-  // 颜色变量（与 Tailwind 同步）
-  --color-bg-base: #0A0A14;
-  --color-bg-card: #0F0F1E;
-  --color-bg-hover: #1A1530;
-  --color-border: #25204060;
+  // ============== 颜色变量 ==============
+  --color-bg-base:    #0A0A0B;
+  --color-bg-card:    #15151A;
+  --color-bg-hover:   #1F1F26;
+  --color-border:     rgba(255, 255, 255, 0.06);
+  --color-border-hover: rgba(255, 255, 255, 0.12);
 
-  --color-brand: #7C3AED;
-  --color-brand-hover: #8B5CF6;
-  --color-accent: #06B6D4;
+  // 主色（替换原紫色系）
+  // 注意：保留变量名 --color-brand 以避免大规模重命名
+  --color-brand:        #F4F5F7;
+  --color-brand-hover:  #FFFFFF;
+  --color-accent:       #C8A862;
 
-  --color-fg-primary: #F5F5F7;
-  --color-fg-secondary: #A1A1AA;
-  --color-fg-tertiary: #71717A;
+  --color-fg-primary:   #F4F5F7;
+  --color-fg-secondary: #94A3B8;
+  --color-fg-tertiary:  #64748B;
 
-  // 间距系统（8 的倍数）
+  // 状态色（哑光化）
+  --color-success:    #A3D9B1;
+  --color-success-bg: rgba(163, 217, 177, 0.12);
+  --color-warning:    #C8A862;
+  --color-warning-bg: rgba(200, 168, 98, 0.12);
+  --color-danger:     #E89090;
+  --color-danger-bg:  rgba(232, 144, 144, 0.12);
+  --color-info:       #94A3B8;
+  --color-info-bg:    rgba(148, 163, 184, 0.12);
+
+  // ============== 间距系统（不动）==============
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -23,19 +36,20 @@
   --space-8: 48px;
   --space-10: 64px;
 
-  // 圆角
+  // ============== 圆角（不动）==============
   --radius-card: 16px;
-  --radius-btn: 12px;
+  --radius-btn:  12px;
   --radius-pill: 999px;
 
-  // 阴影
-  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --shadow-glow: 0 0 24px rgba(124, 58, 237, 0.4);
+  // ============== 阴影（更新发光色为银色）==============
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+  --shadow-glow:  0 0 24px rgba(244, 245, 247, 0.15);
+  --shadow-glow-gold: 0 0 32px rgba(200, 168, 98, 0.25);
 
-  // 渐变（品牌渐变，文字/Logo 用）
-  --brand-gradient: linear-gradient(135deg, #7C3AED 0%, #06B6D4 100%);
+  // 渐变变量保留原名，避免已有 Logo / 登录页引用失效
+  --brand-gradient: linear-gradient(135deg, #F4F5F7 0%, #94A3B8 50%, #C8A862 100%);
 
-  // 动效
+  // ============== 动效（不动）==============
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --duration-base: 300ms;
 }

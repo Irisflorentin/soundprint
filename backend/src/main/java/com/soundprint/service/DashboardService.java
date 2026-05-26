@@ -24,6 +24,7 @@ public class DashboardService {
     private final ArtistService artistService;
     private final PlayHistoryService playHistoryService;
     private final UserFavoriteService userFavoriteService;
+    private final PlaylistService playlistService;
     private final UserMapper userMapper;
     private final CurrentUserUtil currentUserUtil;
 
@@ -48,6 +49,8 @@ public class DashboardService {
         arq.setPage(1L);
         arq.setSize(12L);
         r.setFeaturedArtists(artistService.pageQuery(arq).getRecords());
+
+        r.setFeaturedPlaylists(playlistService.pageQuery(1L, 12L).getRecords());
 
         return r;
     }

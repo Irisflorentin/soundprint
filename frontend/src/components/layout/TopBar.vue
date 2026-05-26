@@ -54,7 +54,8 @@ function goUpload() {
 .search { flex: 1; max-width: 480px; }
 .actions { display: flex; align-items: center; gap: var(--space-3); }
 .avatar {
-  background: linear-gradient(135deg, #7C3AED, #06B6D4);
+  background: linear-gradient(135deg, #F4F5F7 0%, #94A3B8 50%, #C8A862 100%);
+  color: #0A0A0B;
   font-weight: 600;
   cursor: pointer;
 }

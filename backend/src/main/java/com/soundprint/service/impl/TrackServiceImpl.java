@@ -4,10 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.soundprint.common.PageResult;
 import com.soundprint.dto.request.track.TrackQueryRequest;
 import com.soundprint.dto.request.track.TrackUpdateRequest;
 import com.soundprint.dto.response.TrackDetailResponse;
+import com.soundprint.dto.response.TrackPeaksResponse;
 import com.soundprint.dto.response.TrackResponse;
 import com.soundprint.entity.*;
 import com.soundprint.exception.BusinessException;
@@ -16,6 +18,7 @@ import com.soundprint.mapper.*;
 import com.soundprint.service.TrackService;
 import com.soundprint.util.AudioMetadata;
 import com.soundprint.util.AudioMetadataReader;
+import com.soundprint.util.AudioPeaksGenerator;
 import com.soundprint.util.CurrentUserUtil;
 import com.soundprint.util.FileStorageUtil;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -48,6 +52,8 @@ public class TrackServiceImpl extends ServiceImpl<TrackMapper, Track> implements
     private final UserFavoriteMapper userFavoriteMapper;
     private final FileStorageUtil fileStorageUtil;
     private final AudioMetadataReader audioMetadataReader;
+    private final AudioPeaksGenerator audioPeaksGenerator;
+    private final ObjectMapper objectMapper;
     private final CurrentUserUtil currentUserUtil;
 
     @Override
@@ -188,6 +194,45 @@ public class TrackServiceImpl extends ServiceImpl<TrackMapper, Track> implements
     }
 
     @Override
+    public TrackPeaksResponse getPeaks(Long id, Integer samples) {
+        Track t = getById(id);
+        if (t == null) {
+            throw new ResourceNotFoundException("曲目", id);
+        }
+        if (t.getFilePath() == null) {
+            throw new BusinessException("该曲目没有关联音频文件");
+        }
+
+        int sampleCount = normalizePeakSampleCount(samples);
+        File audioFile = fileStorageUtil.getFile(t.getFilePath());
+        if (!audioFile.exists()) {
+            throw new BusinessException(404, "音频文件不存在: " + t.getFilePath());
+        }
+
+        File cacheFile = fileStorageUtil.getFile("peaks/" + id + ".json");
+        TrackPeaksResponse cached = readPeaksCache(cacheFile, sampleCount, t.getDurationSeconds());
+        if (cached != null) {
+            return cached;
+        }
+
+        try {
+            float[] peaks = audioPeaksGenerator.generate(audioFile, sampleCount);
+            TrackPeaksResponse response = new TrackPeaksResponse();
+            response.setSampleCount(peaks.length);
+            response.setDuration(t.getDurationSeconds() != null ? t.getDurationSeconds() : 0);
+            response.setPeaks(peaks);
+            writePeaksCache(cacheFile, response);
+            return response;
+        } catch (IOException e) {
+            log.error("生成波形峰值失败: trackId={}", id, e);
+            throw new BusinessException("生成波形峰值失败: " + e.getMessage());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new BusinessException("生成波形峰值被中断");
+        }
+    }
+
+    @Override
     public void updateLyrics(Long id, String lyrics) {
         Track t = getById(id);
         if (t == null) {
@@ -272,5 +317,49 @@ public class TrackServiceImpl extends ServiceImpl<TrackMapper, Track> implements
         if (filename == null) return "未命名";
         int dot = filename.lastIndexOf('.');
         return dot > 0 ? filename.substring(0, dot) : filename;
+    }
+
+    private int normalizePeakSampleCount(Integer samples) {
+        if (samples == null) {
+            return 1000;
+        }
+        if (samples < 1) {
+            throw new BusinessException("波形采样数量必须大于 0");
+        }
+        return Math.min(samples, 10000);
+    }
+
+    private TrackPeaksResponse readPeaksCache(File cacheFile, int sampleCount, Integer duration) {
+        if (!cacheFile.exists()) {
+            return null;
+        }
+        try {
+            TrackPeaksResponse cached = objectMapper.readValue(cacheFile, TrackPeaksResponse.class);
+            int expectedDuration = duration != null ? duration : 0;
+            if (cached.getSampleCount() != null
+                    && cached.getSampleCount() == sampleCount
+                    && cached.getDuration() != null
+                    && cached.getDuration() == expectedDuration
+                    && cached.getPeaks() != null
+                    && cached.getPeaks().length == sampleCount) {
+                return cached;
+            }
+        } catch (IOException e) {
+            log.warn("读取 peaks 缓存失败，将重新生成: {}", cacheFile.getAbsolutePath());
+        }
+        return null;
+    }
+
+    private void writePeaksCache(File cacheFile, TrackPeaksResponse response) {
+        File parent = cacheFile.getParentFile();
+        if (parent != null && !parent.exists() && !parent.mkdirs()) {
+            log.warn("无法创建 peaks 缓存目录: {}", parent.getAbsolutePath());
+            return;
+        }
+        try {
+            objectMapper.writeValue(cacheFile, response);
+        } catch (IOException e) {
+            log.warn("写入 peaks 缓存失败: {}, err={}", cacheFile.getAbsolutePath(), e.getMessage());
+        }
     }
 }

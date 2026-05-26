@@ -38,7 +38,7 @@ withDefaults(defineProps<{
     cursor: pointer;
     &:hover {
       background: rgba(255, 255, 255, 0.05);
-      border-color: rgba(124, 58, 237, 0.3);
+      border-color: rgba(244, 245, 247, 0.16);
       transform: translateY(-2px);
       box-shadow: var(--shadow-glass);
     }

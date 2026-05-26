@@ -15,4 +15,5 @@ public class DashboardResponse {
     private List<TrackResponse> favorites;
     private List<AlbumResponse> featuredAlbums;
     private List<ArtistResponse> featuredArtists;
+    private List<PlaylistResponse> featuredPlaylists;
 }

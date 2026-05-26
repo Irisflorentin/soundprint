@@ -2,8 +2,9 @@
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
     <defs>
       <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#7C3AED" />
-        <stop offset="100%" stop-color="#06B6D4" />
+        <stop offset="0%" stop-color="#F4F5F7" />
+        <stop offset="52%" stop-color="#94A3B8" />
+        <stop offset="100%" stop-color="#C8A862" />
       </linearGradient>
     </defs>
     <rect x="3"  y="13" width="3" height="6"  rx="1.5" fill="url(#logoGrad)" />

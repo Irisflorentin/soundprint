@@ -12,6 +12,7 @@ import com.soundprint.exception.BusinessException;
 import com.soundprint.exception.ResourceNotFoundException;
 import com.soundprint.mapper.ConversionTaskMapper;
 import com.soundprint.mapper.TrackMapper;
+import com.soundprint.service.ConversionExecutionService;
 import com.soundprint.service.ConversionTaskService;
 import com.soundprint.util.CurrentUserUtil;
 import com.soundprint.util.FileStorageUtil;
@@ -20,19 +21,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * <p>
  * 格式转换任务表 服务实现类
  * </p>
  *
- * Phase 3 不接 FFmpeg：提交后用后台线程模拟进度 0→100，完成时把源音频
- * 复制一份当作"转换结果"（源是种子占位时写一个占位成品），保证前端能完整
- * 联调"提交→轮询进度→下载"流程。Phase 5 会把 simulate() 换成真正的
- * ProcessBuilder 调 FFmpeg 转码。
+ * Phase 5 接入真实 FFmpeg：提交任务后立即返回，后台线程负责转码并更新进度。
  *
  * @author Soundprint
  * @since 2026-05-25
@@ -45,6 +40,7 @@ public class ConversionTaskServiceImpl extends ServiceImpl<ConversionTaskMapper,
     private final TrackMapper trackMapper;
     private final FileStorageUtil fileStorageUtil;
     private final CurrentUserUtil currentUserUtil;
+    private final ConversionExecutionService conversionExecutionService;
 
     @Override
     public ConversionTaskResponse submit(ConversionSubmitRequest request) {
@@ -59,14 +55,12 @@ public class ConversionTaskServiceImpl extends ServiceImpl<ConversionTaskMapper,
         task.setTargetFormat(request.getTargetFormat());
         task.setTargetBitrate(request.getTargetBitrate());
         task.setTargetSampleRate(request.getTargetSampleRate());
-        task.setStatus("RUNNING");
+        task.setStatus("PENDING");
         task.setProgress(0);
-        task.setStartedAt(LocalDateTime.now());
         save(task);
 
-        // 后台异步模拟转换（不阻塞当前请求）
-        final Long taskId = task.getId();
-        CompletableFuture.runAsync(() -> simulate(taskId, request.getSourceTrackId(), request.getTargetFormat()));
+        // 后台异步转换（不阻塞当前请求）
+        conversionExecutionService.executeConversion(task.getId());
 
         return ConversionTaskResponse.from(task);
     }
@@ -109,57 +103,4 @@ public class ConversionTaskServiceImpl extends ServiceImpl<ConversionTaskMapper,
         return f;
     }
 
-    // ====== 私有：模拟转换过程 ======
-
-    private void simulate(Long taskId, Long sourceTrackId, String targetFormat) {
-        try {
-            for (int pct : new int[]{20, 40, 60, 80}) {
-                Thread.sleep(700);
-                updateProgress(taskId, pct);
-            }
-
-            String ext = targetFormat.toLowerCase();
-            Track src = trackMapper.selectById(sourceTrackId);
-            File srcFile = (src != null && src.getFilePath() != null)
-                    ? fileStorageUtil.getFile(src.getFilePath()) : null;
-
-            String outputPath;
-            if (srcFile != null && srcFile.exists()) {
-                // 真实文件：复制一份作为"转换结果"
-                outputPath = fileStorageUtil.copyFile(srcFile, "conversion", ext);
-            } else {
-                // 源是种子占位、无真实音频：写一个占位成品，保证下载流程可联调
-                byte[] placeholder = ("Soundprint Phase 3 转换占位文件\n"
-                        + "源曲目无真实音频（种子占位），Phase 5 接入 FFmpeg 后此处为真实转码结果。\n")
-                        .getBytes(StandardCharsets.UTF_8);
-                outputPath = fileStorageUtil.storeBytes(placeholder, "conversion", ext);
-            }
-
-            ConversionTask t = getById(taskId);
-            if (t != null) {
-                t.setStatus("SUCCESS");
-                t.setProgress(100);
-                t.setOutputPath(outputPath);
-                t.setFinishedAt(LocalDateTime.now());
-                updateById(t);
-            }
-        } catch (Exception e) {
-            log.warn("模拟转换失败: taskId={}, err={}", taskId, e.getMessage());
-            ConversionTask t = getById(taskId);
-            if (t != null) {
-                t.setStatus("FAILED");
-                t.setErrorMessage(e.getMessage());
-                t.setFinishedAt(LocalDateTime.now());
-                updateById(t);
-            }
-        }
-    }
-
-    private void updateProgress(Long taskId, int pct) {
-        ConversionTask t = getById(taskId);
-        if (t != null) {
-            t.setProgress(pct);
-            updateById(t);
-        }
-    }
 }

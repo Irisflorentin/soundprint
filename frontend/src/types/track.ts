@@ -42,3 +42,9 @@ export interface TrackUpdate {
   trackNumber?: number;
   lyrics?: string;
 }
+
+export interface TrackPeaks {
+  sampleCount: number;
+  duration: number;
+  peaks: number[];
+}

@@ -8,6 +8,7 @@ import PageHeader from '@/components/common/PageHeader.vue';
 import LoadingBlock from '@/components/common/LoadingBlock.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 import GlassCard from '@/components/common/GlassCard.vue';
+import SmartCover from '@/components/common/SmartCover.vue';
 import { trackApi } from '@/api/track';
 import { favoriteApi } from '@/api/favorite';
 import type { Track } from '@/types/track';
@@ -73,7 +74,8 @@ function handleSizeChange(nextSize: number) {
 }
 
 function play(track: Track) {
-  playerStore.play(track);
+  const index = tracks.value.findIndex((item) => item.id === track.id);
+  playerStore.playTrack(track, tracks.value, index);
 }
 
 async function toggleFavorite(track: Track) {
@@ -229,9 +231,11 @@ onMounted(() => {
         >
           <el-table-column width="72">
             <template #default="{ row }">
-              <div
+              <SmartCover
+                :src="row.coverUrl || row.albumCoverUrl"
+                :alt="row.title"
+                :fallback-text="row.title"
                 class="table-cover"
-                :style="(row.coverUrl || row.albumCoverUrl) ? { backgroundImage: `url(${row.coverUrl || row.albumCoverUrl})` } : undefined"
               />
             </template>
           </el-table-column>
@@ -252,7 +256,7 @@ onMounted(() => {
           </el-table-column>
           <el-table-column label="格式" width="90">
             <template #default="{ row }">
-              <el-tag size="small" effect="dark">{{ row.format }}</el-tag>
+              <el-tag size="small" effect="dark" class="format-tag">{{ row.format }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column label="操作" width="150" fixed="right">
@@ -265,7 +269,14 @@ onMounted(() => {
                 :class="{ 'is-fav': row.favorited }"
                 @click.stop="toggleFavorite(row)"
               />
-              <el-button :icon="Delete" circle size="small" type="danger" @click.stop="removeTrack(row)" />
+              <el-button
+                :icon="Delete"
+                circle
+                size="small"
+                type="danger"
+                class="delete-action"
+                @click.stop="removeTrack(row)"
+              />
             </template>
           </el-table-column>
         </el-table>
@@ -342,10 +353,6 @@ onMounted(() => {
   width: 44px;
   height: 44px;
   border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(124, 58, 237, 0.82), rgba(6, 182, 212, 0.68));
-  background-position: center;
-  background-size: cover;
 }
 
 .track-title {
@@ -368,7 +375,25 @@ onMounted(() => {
 
 :deep(.is-fav) {
   color: var(--color-brand);
-  border-color: rgba(124, 58, 237, 0.5);
+  border-color: rgba(244, 245, 247, 0.38);
+}
+
+:deep(.format-tag) {
+  --el-tag-bg-color: rgba(200, 168, 98, 0.18);
+  --el-tag-border-color: rgba(200, 168, 98, 0.32);
+  --el-tag-text-color: #D4C5A0;
+  font-weight: 700;
+}
+
+:deep(.delete-action) {
+  --el-button-text-color: #D4C5A0;
+  --el-button-bg-color: rgba(200, 168, 98, 0.12);
+  --el-button-border-color: rgba(200, 168, 98, 0.34);
+  --el-button-hover-text-color: #0A0A0B;
+  --el-button-hover-bg-color: #C8A862;
+  --el-button-hover-border-color: #C8A862;
+  --el-button-active-bg-color: #D4C5A0;
+  --el-button-active-border-color: #D4C5A0;
 }
 
 @media (max-width: 1100px) {
