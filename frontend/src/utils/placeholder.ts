@@ -1,10 +1,10 @@
 export type PlaceholderType = 'album' | 'artist' | 'playlist' | 'track';
 
 const PLACEHOLDER_COLORS: Record<PlaceholderType, [string, string]> = {
-  album: ['#F4F5F7', '#94A3B8'],
-  artist: ['#E5E7EB', '#64748B'],
-  playlist: ['#CBD5E1', '#94A3B8'],
-  track: ['#F4F5F7', '#94A3B8'],
+  album: ['#F7F4EA', '#A7B1C0'],
+  artist: ['#F4F5F7', '#D4C5A0'],
+  playlist: ['#E5E7EB', '#C8A862'],
+  track: ['#F4F5F7', '#D4C5A0'],
 };
 
 export function placeholderInitial(name: string): string {
@@ -26,7 +26,7 @@ export function placeholderInitial(name: string): string {
 export function placeholderGradient(name: string, type: PlaceholderType): string {
   const angle = simpleHash(name) % 360;
   const [from, to] = PLACEHOLDER_COLORS[type];
-  return `linear-gradient(${angle}deg, ${from} 0%, ${to} 100%)`;
+  return `linear-gradient(${angle}deg, ${from} 0%, #94A3B8 48%, ${to} 100%)`;
 }
 
 export function placeholderImage(name: string, type: PlaceholderType): string {
@@ -39,14 +39,21 @@ export function placeholderImage(name: string, type: PlaceholderType): string {
       <defs>
         <linearGradient id="g" gradientTransform="rotate(${angle})">
           <stop offset="0%" stop-color="${from}"/>
+          <stop offset="48%" stop-color="#94A3B8"/>
           <stop offset="100%" stop-color="${to}"/>
         </linearGradient>
         <radialGradient id="vignette" cx="50%" cy="50%" r="60%">
           <stop offset="0%" stop-color="rgba(0,0,0,0)"/>
-          <stop offset="100%" stop-color="rgba(0,0,0,0.3)"/>
+          <stop offset="100%" stop-color="rgba(0,0,0,0.26)"/>
         </radialGradient>
+        <linearGradient id="sheen" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="rgba(255,255,255,0.24)"/>
+          <stop offset="45%" stop-color="rgba(255,255,255,0)"/>
+          <stop offset="100%" stop-color="rgba(200,168,98,0.18)"/>
+        </linearGradient>
       </defs>
       <rect width="600" height="600" fill="url(#g)"/>
+      <rect width="600" height="600" fill="url(#sheen)"/>
       <rect width="600" height="600" fill="url(#vignette)"/>
       <text x="50%" y="50%"
             font-family="Inter, 'PingFang SC', system-ui, sans-serif"

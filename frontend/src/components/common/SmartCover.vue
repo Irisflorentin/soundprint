@@ -84,7 +84,7 @@ watch(() => props.src, () => {
     content: '';
     background:
       radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0), rgba(0, 0, 0, 0.24)),
-      linear-gradient(120deg, rgba(255, 255, 255, 0.18), transparent 46%, rgba(255, 255, 255, 0.08));
+      linear-gradient(120deg, rgba(255, 255, 255, 0.20), transparent 44%, rgba(200, 168, 98, 0.18));
   }
 
   span {
