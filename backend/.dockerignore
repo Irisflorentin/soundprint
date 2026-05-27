@@ -1,0 +1,9 @@
+target/
+.idea/
+*.iml
+.git/
+.gitignore
+README.md
+*.log
+.env
+src/main/resources/application-dev.yml

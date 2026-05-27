@@ -1,0 +1,10 @@
+.git/
+.codex-logs/
+backend/target/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+*.log
+.env
+tmp/
+temp/

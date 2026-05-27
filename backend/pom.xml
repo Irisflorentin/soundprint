@@ -40,6 +40,12 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <!-- Actuator：提供 /actuator/health，供 Docker healthcheck 判断后端是否真正可用 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <!-- MyBatis-Plus（Spring Boot 3 专用 starter） -->
         <dependency>
             <groupId>com.baomidou</groupId>

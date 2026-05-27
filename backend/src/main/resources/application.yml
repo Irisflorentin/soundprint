@@ -52,6 +52,16 @@ springdoc:
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
 
+# Actuator 健康检查：Docker healthcheck 只需要 health 端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
 # ========== Soundprint 业务配置 ==========
 soundprint:
   storage:

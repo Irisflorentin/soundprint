@@ -1,0 +1,56 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    # 容器间通信用 Docker Compose service name：mysql，而不是 localhost。
+    url: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:soundprint}?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER:soundprint}
+    password: ${MYSQL_PASSWORD:soundprint123}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 500MB
+
+# Soundprint 自定义配置：字段名必须匹配 StorageProperties。
+soundprint:
+  storage:
+    base-dir: /data/storage
+    audio-dir: /data/storage/audio
+    cover-dir: /data/storage/cover
+    avatar-dir: /data/storage/avatar
+    conversion-dir: /data/storage/conversion
+    temp-dir: /data/storage/temp
+  upload:
+    max-file-size: 200MB
+    allowed-audio-formats: flac,mp3,wav,aac,ogg,m4a
+    allowed-image-formats: jpg,jpeg,png,webp
+  current-user-id: 1
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+
+logging:
+  level:
+    root: INFO
+    com.soundprint: INFO
+    org.springframework.web: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
