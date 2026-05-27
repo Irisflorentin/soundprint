@@ -3,4 +3,5 @@ export interface User {
   username: string;
   nickname: string;
   avatarUrl: string | null;
+  registeredAt: string;
 }

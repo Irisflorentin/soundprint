@@ -17,7 +17,8 @@ const routes: RouteRecordRaw[] = [
   { path: '/now-playing', component: () => import('@/views/player/NowPlayingView.vue') },
   { path: '/studio',      component: () => import('@/views/studio/StudioView.vue') },
   { path: '/stats',       component: () => import('@/views/stats/StatsView.vue') },
-  { path: '/settings',    component: () => import('@/views/settings/SettingsView.vue') },
+  { path: '/profile',     component: () => import('@/views/profile/ProfileView.vue') },
+  { path: '/settings',    redirect: '/profile' },
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ];
 

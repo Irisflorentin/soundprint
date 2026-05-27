@@ -22,6 +22,7 @@ const settingsItem = { path: '/settings', label: '设置', icon: Setting };
 
 function isActive(path: string) {
   if (path === '/') return route.path === '/';
+  if (path === '/settings') return route.path === '/settings' || route.path === '/profile';
   return route.path.startsWith(path);
 }
 </script>

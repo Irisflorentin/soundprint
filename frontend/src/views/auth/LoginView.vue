@@ -11,11 +11,12 @@ const username = ref('admin');
 const password = ref('');
 const loading = ref(false);
 
-function handleLogin() {
+async function handleLogin() {
   loading.value = true;
   try {
     userStore.login(username.value, password.value);
-    router.push('/');
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    await router.push('/');
   } finally {
     loading.value = false;
   }

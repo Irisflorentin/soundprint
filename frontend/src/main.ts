@@ -3,6 +3,7 @@ import App from './App.vue';
 import router from './router';
 import { setupGuards } from './router/guards';
 import { pinia } from './stores';
+import { useUserStore } from './stores/user';
 import ElementPlus from 'element-plus';
 import zhCn from 'element-plus/es/locale/lang/zh-cn';
 import { registerSoundprintTheme } from '@/utils/echarts-theme';
@@ -15,11 +16,14 @@ registerSoundprintTheme();
 
 const app = createApp(App);
 app.use(pinia);
+
+// 必须在路由挂载前恢复登录态，否则首次访问会被守卫误判。
+const userStore = useUserStore();
+userStore.restoreFromStorage();
+setupGuards(router);
+
 app.use(router);
 app.use(ElementPlus, { locale: zhCn });
-
-// 路由守卫需在 pinia 之后
-setupGuards(router);
 
 // 启用 Element-Plus 暗色主题
 document.documentElement.classList.add('dark');

@@ -17,6 +17,18 @@ function handleSearch() {
 function goUpload() {
   router.push({ path: '/library', query: { upload: 'true' } });
 }
+
+function handleUserCommand(command: string) {
+  if (command === 'profile') {
+    router.push('/profile');
+    return;
+  }
+
+  if (command === 'logout') {
+    userStore.logout();
+    router.push('/login');
+  }
+}
 </script>
 
 <template>
@@ -35,9 +47,17 @@ function goUpload() {
     <div class="actions">
       <el-button type="primary" :icon="Upload" @click="goUpload">上传</el-button>
       <el-button :icon="Bell" circle />
-      <el-avatar :size="36" class="avatar">
-        {{ userStore.currentUser.nickname?.[0] || 'U' }}
-      </el-avatar>
+      <el-dropdown trigger="click" @command="handleUserCommand">
+        <el-avatar :size="36" class="avatar">
+          {{ userStore.nickname?.[0]?.toUpperCase() || 'U' }}
+        </el-avatar>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item command="profile">个人资料</el-dropdown-item>
+            <el-dropdown-item command="logout" divided>注销</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
     </div>
   </header>
 </template>
