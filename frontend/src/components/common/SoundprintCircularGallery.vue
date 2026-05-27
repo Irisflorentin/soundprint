@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, ref } from 'vue';
 import CircularGallery from '@/components/vue-bits/components/CircullarGallery.vue';
 import { fileUrl } from '@/utils/url';
 import { releaseWebglContexts } from '@/utils/webgl';
@@ -24,14 +24,17 @@ const emit = defineEmits<{
 }>();
 
 const root = ref<HTMLElement | null>(null);
-const pointerStart = ref<{ x: number; y: number } | null>(null);
-const suppressNextClick = ref(false);
-const centerIndex = ref(0);
+const mouseDownPos = ref<{ x: number; y: number } | null>(null);
+const DRAG_THRESHOLD = 5;
+const GALLERY_SCROLL_SPEED = 2.5;
+const scrollTarget = ref(0);
+const scrollIndex = ref(0);
+const dragStartTarget = ref(0);
+let wheelSnapTimer: number | undefined;
 
 const displayedItems = computed(() => props.items.slice(0, 15));
-const orderedItems = computed(() => rotateItems(displayedItems.value, centerIndex.value));
 
-const galleryItems = computed(() => orderedItems.value.map((item) => {
+const galleryItems = computed(() => displayedItems.value.map((item) => {
   const rawImage = item.coverUrl || item.avatarUrl || '';
   const text = item.title || item.name || fallbackText(props.type);
   const image = rawImage
@@ -42,15 +45,11 @@ const galleryItems = computed(() => orderedItems.value.map((item) => {
 }));
 
 onBeforeUnmount(() => {
+  if (wheelSnapTimer !== undefined) {
+    window.clearTimeout(wheelSnapTimer);
+  }
   releaseWebglContexts(root.value);
 });
-
-watch(
-  () => displayedItems.value.length,
-  () => {
-    centerIndex.value = 0;
-  }
-);
 
 function toAbsoluteAssetUrl(path: string) {
   const url = fileUrl(path);
@@ -70,84 +69,79 @@ function fallbackImage(item: GallerySourceItem, type: GalleryType): string {
   return placeholderImage(item.title || item.name || fallbackText(type), type);
 }
 
-function rememberPointerStart(event: PointerEvent) {
-  event.stopPropagation();
-  pointerStart.value = { x: event.clientX, y: event.clientY };
+function handleMouseDown(event: MouseEvent) {
+  mouseDownPos.value = { x: event.clientX, y: event.clientY };
+  dragStartTarget.value = scrollTarget.value;
 }
 
-function handlePointerUp(event: PointerEvent) {
-  if (!pointerStart.value) return;
-  const movedX = event.clientX - pointerStart.value.x;
-  if (Math.abs(movedX) < 40) return;
+function handleMouseUp(event: MouseEvent) {
+  if (!mouseDownPos.value) return;
 
-  event.preventDefault();
-  event.stopPropagation();
+  const dx = Math.abs(event.clientX - mouseDownPos.value.x);
+  const dy = Math.abs(event.clientY - mouseDownPos.value.y);
 
-  const rect = root.value?.getBoundingClientRect();
-  const slotWidth = rect && rect.width > 0
-    ? rect.width / Math.min(5, displayedItems.value.length || 1)
-    : 120;
-  const steps = Math.max(1, Math.round(Math.abs(movedX) / slotWidth));
-  centerIndex.value = normalizeIndex(
-    centerIndex.value + (movedX < 0 ? steps : -steps),
-    displayedItems.value.length
-  );
-  pointerStart.value = null;
-  suppressNextClick.value = true;
+  if (dx < DRAG_THRESHOLD && dy < DRAG_THRESHOLD) {
+    handleClick(event);
+  } else {
+    const distance = (mouseDownPos.value.x - event.clientX) * (GALLERY_SCROLL_SPEED * 0.025);
+    scrollTarget.value = dragStartTarget.value + distance;
+    snapScrollTarget();
+  }
+
+  mouseDownPos.value = null;
 }
 
 function handleWheel(event: WheelEvent) {
   if (Math.abs(event.deltaY) < 1 && Math.abs(event.deltaX) < 1) return;
-  event.preventDefault();
-  event.stopPropagation();
-
   const direction = Math.abs(event.deltaY) >= Math.abs(event.deltaX)
     ? event.deltaY
     : event.deltaX;
-  centerIndex.value = normalizeIndex(
-    centerIndex.value + (direction > 0 ? 1 : -1),
-    displayedItems.value.length
-  );
+  scrollTarget.value += direction > 0 ? GALLERY_SCROLL_SPEED : -GALLERY_SCROLL_SPEED;
+  scheduleScrollSnap();
 }
 
 function handleClick(event: MouseEvent) {
-  event.stopPropagation();
-  if (!root.value || orderedItems.value.length === 0) return;
-  if (suppressNextClick.value) {
-    suppressNextClick.value = false;
-    return;
-  }
-
-  if (pointerStart.value) {
-    const movedX = Math.abs(event.clientX - pointerStart.value.x);
-    const movedY = Math.abs(event.clientY - pointerStart.value.y);
-    pointerStart.value = null;
-    if (movedX > 8 || movedY > 8) return;
-  }
+  if (!root.value || displayedItems.value.length === 0) return;
 
   const rect = root.value.getBoundingClientRect();
   if (rect.width <= 0) return;
 
   const clickX = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
-  const itemWidth = rect.width / Math.min(5, orderedItems.value.length);
-  const indexOffset = Math.round((clickX - rect.width / 2) / itemWidth);
-  const orderedIndex = normalizeIndex(indexOffset, orderedItems.value.length);
-  const item = orderedItems.value[orderedIndex];
+  const slotCount = Math.min(5, displayedItems.value.length);
+  const slotWidth = rect.width / slotCount;
+  const maxOffset = Math.floor(slotCount / 2);
+  const rawOffset = Math.round((clickX - rect.width / 2) / slotWidth);
+  const indexOffset = Math.max(-maxOffset, Math.min(maxOffset, rawOffset));
+  const targetIndex = normalizeIndex(scrollIndex.value + indexOffset, displayedItems.value.length);
+  const item = displayedItems.value[targetIndex];
   if (!item) return;
 
-  const sourceIndex = displayedItems.value.findIndex(source => source.id === item.id);
-  emit('select', item, sourceIndex >= 0 ? sourceIndex : orderedIndex);
+  emit('select', item, targetIndex);
 }
 
-function blockNativeGalleryScroll(event: Event) {
-  event.preventDefault();
-  event.stopPropagation();
+function scheduleScrollSnap() {
+  if (wheelSnapTimer !== undefined) {
+    window.clearTimeout(wheelSnapTimer);
+  }
+  wheelSnapTimer = window.setTimeout(() => {
+    snapScrollTarget();
+    wheelSnapTimer = undefined;
+  }, 240);
 }
 
-function rotateItems<T>(items: T[], startIndex: number): T[] {
-  if (items.length === 0) return [];
-  const start = normalizeIndex(startIndex, items.length);
-  return items.slice(start).concat(items.slice(0, start));
+function snapScrollTarget() {
+  const itemWidth = getGalleryItemWidth();
+  const itemIndex = Math.round(Math.abs(scrollTarget.value) / itemWidth);
+  scrollTarget.value = scrollTarget.value < 0 ? -itemWidth * itemIndex : itemWidth * itemIndex;
+  scrollIndex.value = scrollTarget.value < 0 ? -itemIndex : itemIndex;
+}
+
+function getGalleryItemWidth() {
+  const cameraFov = 45 * Math.PI / 180;
+  const cameraZ = 20;
+  const viewportHeight = 2 * Math.tan(cameraFov / 2) * cameraZ;
+  const planeWidth = viewportHeight * 700 / 1500;
+  return planeWidth + 2;
 }
 
 function normalizeIndex(index: number, length: number): number {
@@ -162,14 +156,9 @@ function normalizeIndex(index: number, length: number): number {
     class="gallery-wrap"
     role="button"
     tabindex="0"
-    @pointerdown.capture="rememberPointerStart"
-    @pointerup.capture="handlePointerUp"
-    @mousedown.capture="blockNativeGalleryScroll"
-    @touchstart.capture="blockNativeGalleryScroll"
-    @touchmove.capture="blockNativeGalleryScroll"
-    @touchend.capture="blockNativeGalleryScroll"
-    @wheel.capture="handleWheel"
-    @click.capture="handleClick"
+    @mousedown="handleMouseDown"
+    @mouseup="handleMouseUp"
+    @wheel="handleWheel"
   >
     <CircularGallery
       :items="galleryItems"
