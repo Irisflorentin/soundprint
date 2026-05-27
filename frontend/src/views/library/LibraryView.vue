@@ -224,62 +224,64 @@ onMounted(() => {
         description="换个关键词试试，或上传一首音乐。"
       />
       <template v-else>
-        <el-table
-          :data="tracks"
-          height="100%"
-          @row-click="play"
-        >
-          <el-table-column width="72">
-            <template #default="{ row }">
-              <SmartCover
-                :src="row.coverUrl || row.albumCoverUrl"
-                :alt="row.title"
-                :fallback-text="row.title"
-                class="table-cover"
-              />
-            </template>
-          </el-table-column>
-          <el-table-column label="标题" min-width="220">
-            <template #default="{ row }">
-              <div class="track-title">{{ row.title }}</div>
-              <div class="track-meta">{{ formatFileSize(row.fileSizeBytes) }} · {{ formatDate(row.createdAt) }}</div>
-            </template>
-          </el-table-column>
-          <el-table-column prop="artistName" label="艺术家" min-width="150">
-            <template #default="{ row }">{{ row.artistName || '未知艺术家' }}</template>
-          </el-table-column>
-          <el-table-column prop="albumTitle" label="专辑" min-width="180">
-            <template #default="{ row }">{{ row.albumTitle || '未知专辑' }}</template>
-          </el-table-column>
-          <el-table-column label="时长" width="90">
-            <template #default="{ row }">{{ formatDuration(row.duration) }}</template>
-          </el-table-column>
-          <el-table-column label="格式" width="90">
-            <template #default="{ row }">
-              <el-tag size="small" effect="dark" class="format-tag">{{ row.format }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="150" fixed="right">
-            <template #default="{ row }">
-              <el-button :icon="VideoPlay" circle size="small" @click.stop="play(row)" />
-              <el-button
-                :icon="row.favorited ? StarFilled : Star"
-                circle
-                size="small"
-                :class="{ 'is-fav': row.favorited }"
-                @click.stop="toggleFavorite(row)"
-              />
-              <el-button
-                :icon="Delete"
-                circle
-                size="small"
-                type="danger"
-                class="delete-action"
-                @click.stop="removeTrack(row)"
-              />
-            </template>
-          </el-table-column>
-        </el-table>
+        <div class="table-body">
+          <el-table
+            :data="tracks"
+            height="100%"
+            @row-click="play"
+          >
+            <el-table-column width="72">
+              <template #default="{ row }">
+                <SmartCover
+                  :src="row.coverUrl || row.albumCoverUrl"
+                  :alt="row.title"
+                  :fallback-text="row.title"
+                  class="table-cover"
+                />
+              </template>
+            </el-table-column>
+            <el-table-column label="标题" min-width="220">
+              <template #default="{ row }">
+                <div class="track-title">{{ row.title }}</div>
+                <div class="track-meta">{{ formatFileSize(row.fileSizeBytes) }} · {{ formatDate(row.createdAt) }}</div>
+              </template>
+            </el-table-column>
+            <el-table-column prop="artistName" label="艺术家" min-width="150">
+              <template #default="{ row }">{{ row.artistName || '未知艺术家' }}</template>
+            </el-table-column>
+            <el-table-column prop="albumTitle" label="专辑" min-width="180">
+              <template #default="{ row }">{{ row.albumTitle || '未知专辑' }}</template>
+            </el-table-column>
+            <el-table-column label="时长" width="90">
+              <template #default="{ row }">{{ formatDuration(row.duration) }}</template>
+            </el-table-column>
+            <el-table-column label="格式" width="90">
+              <template #default="{ row }">
+                <el-tag size="small" effect="dark" class="format-tag">{{ row.format }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="150" fixed="right">
+              <template #default="{ row }">
+                <el-button :icon="VideoPlay" circle size="small" @click.stop="play(row)" />
+                <el-button
+                  :icon="row.favorited ? StarFilled : Star"
+                  circle
+                  size="small"
+                  :class="{ 'is-fav': row.favorited }"
+                  @click.stop="toggleFavorite(row)"
+                />
+                <el-button
+                  :icon="Delete"
+                  circle
+                  size="small"
+                  type="danger"
+                  class="delete-action"
+                  @click.stop="removeTrack(row)"
+                />
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
 
         <div class="pagination">
           <el-pagination
@@ -344,9 +346,16 @@ onMounted(() => {
 }
 
 .table-card {
+  display: flex;
+  flex-direction: column;
   height: calc(100vh - 260px);
   min-height: 420px;
   overflow: hidden;
+}
+
+.table-body {
+  flex: 1;
+  min-height: 0;
 }
 
 .table-cover {

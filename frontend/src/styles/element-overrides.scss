@@ -52,7 +52,36 @@ html.dark {
 
 .el-pagination {
   --el-pagination-bg-color: transparent;
+  --el-pagination-button-bg-color: rgba(255, 255, 255, 0.06);
   --el-pagination-button-disabled-bg-color: transparent;
+  --el-pagination-hover-color: #C8A862;
+  --el-pagination-text-color: #CBD5E1;
+  --el-pagination-button-color: #CBD5E1;
+}
+
+/* ========== 分页控件：去掉 Element-Plus 默认蓝，统一银灰/香槟金 ========== */
+.el-pagination.is-background .btn-prev,
+.el-pagination.is-background .btn-next,
+.el-pagination.is-background .el-pager li {
+  color: #CBD5E1;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+}
+
+.el-pagination.is-background .btn-prev:not(:disabled):hover,
+.el-pagination.is-background .btn-next:not(:disabled):hover,
+.el-pagination.is-background .el-pager li:not(.is-active):hover {
+  color: #F4F5F7;
+  background-color: rgba(255, 255, 255, 0.13);
+  border-color: rgba(200, 168, 98, 0.28);
+}
+
+.el-pagination.is-background .el-pager li.is-active {
+  color: #0A0A0B;
+  background: linear-gradient(135deg, #F7F4EA 0%, #D6B86F 48%, #C8A862 100%);
+  border-color: rgba(200, 168, 98, 0.5);
+  box-shadow: 0 0 18px rgba(200, 168, 98, 0.18);
 }
 
 // 主按钮（el-button type="primary"）特殊处理：浅银底炭黑字
