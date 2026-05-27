@@ -61,7 +61,7 @@ onMounted(loadDashboard);
     </EmptyState>
 
     <template v-else>
-      <GlassCard padding="lg" class="hero">
+      <section class="hero">
         <SoundprintGalaxy
           class="hero-galaxy"
           :transparent="true"
@@ -75,12 +75,7 @@ onMounted(loadDashboard);
           <h2>{{ dashboard.greeting || '欢迎回来' }}</h2>
           <p>从最近添加、播放历史和收藏中继续探索你的无损音乐库。</p>
         </div>
-        <div class="hero-panel">
-          <span class="panel-label">VISUAL LAYER</span>
-          <strong>Galaxy</strong>
-          <small>银白星空衬底</small>
-        </div>
-      </GlassCard>
+      </section>
 
       <HorizontalShelf title="最近添加" more="/library">
         <GlassCard
@@ -212,21 +207,29 @@ onMounted(loadDashboard);
 <style scoped lang="scss">
 .dashboard-view {
   min-width: 0;
+
+  :deep(.page-header .title) {
+    color: #E5E7EB;
+  }
+
+  :deep(.page-header .subtitle) {
+    color: #94A3B8;
+  }
 }
 
 .hero {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 260px;
-  gap: var(--space-6);
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   margin-bottom: var(--space-6);
-  min-height: 240px;
+  min-height: 340px;
+  padding: 48px 56px;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 0% 0%, rgba(244, 245, 247, 0.10), transparent 42%),
-    radial-gradient(circle at 100% 100%, rgba(200, 168, 98, 0.10), transparent 38%),
-    rgba(255, 255, 255, 0.03);
+  border: none;
+  border-radius: var(--radius-card);
+  background: transparent;
+  box-shadow: none;
 }
 
 .hero-galaxy {
@@ -234,15 +237,18 @@ onMounted(loadDashboard);
   inset: 0;
   z-index: 0;
   opacity: 0.85;
+  border-radius: inherit;
+  overflow: hidden;
 }
 
 .hero-copy {
   position: relative;
   z-index: 10;
+  max-width: 680px;
 
   .eyebrow {
     margin: 0 0 var(--space-2);
-    color: var(--color-brand);
+    color: #94A3B8;
     font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
@@ -250,40 +256,15 @@ onMounted(loadDashboard);
 
   h2 {
     margin: 0;
-    color: var(--color-fg-primary);
+    color: #E5E7EB;
     font-size: 34px;
     font-weight: 800;
   }
 
   p:last-child {
     margin: var(--space-3) 0 0;
-    color: var(--color-fg-secondary);
+    color: #94A3B8;
     font-size: 15px;
-  }
-}
-
-.hero-panel {
-  position: relative;
-  z-index: 10;
-  min-height: 148px;
-  border: 1px dashed rgba(200, 168, 98, 0.42);
-  border-radius: var(--radius-card);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-5);
-  background: rgba(10, 10, 11, 0.35);
-
-  .panel-label,
-  small {
-    color: var(--color-fg-tertiary);
-    font-size: 12px;
-  }
-
-  strong {
-    color: var(--color-fg-primary);
-    font-size: 22px;
   }
 }
 
@@ -410,9 +391,13 @@ onMounted(loadDashboard);
 }
 
 @media (max-width: 900px) {
-  .hero,
   .feature-grid {
     grid-template-columns: 1fr;
+  }
+
+  .hero {
+    min-height: 320px;
+    padding: 40px 28px;
   }
 }
 </style>
