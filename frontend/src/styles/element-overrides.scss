@@ -20,13 +20,13 @@
   --el-text-color-disabled: #475569;
 
   // 边框
-  --el-border-color: rgba(255, 255, 255, 0.08);
-  --el-border-color-light: rgba(255, 255, 255, 0.05);
-  --el-border-color-lighter: rgba(255, 255, 255, 0.03);
-  --el-border-color-extra-light: rgba(255, 255, 255, 0.02);
+  --el-border-color: rgba(255, 255, 255, 0.04);
+  --el-border-color-light: rgba(255, 255, 255, 0.03);
+  --el-border-color-lighter: rgba(255, 255, 255, 0.02);
+  --el-border-color-extra-light: rgba(255, 255, 255, 0.015);
 
   // 状态色
-  --el-color-success: #A3D9B1;
+  --el-color-success: #C8A862;
   --el-color-warning: #C8A862;
   --el-color-danger:  #E89090;
   --el-color-info:    #94A3B8;
@@ -34,6 +34,11 @@
 
 html.dark {
   color-scheme: dark;
+  --el-color-success: #C8A862;
+  --el-border-color: rgba(255, 255, 255, 0.04);
+  --el-border-color-light: rgba(255, 255, 255, 0.03);
+  --el-border-color-lighter: rgba(255, 255, 255, 0.02);
+  --el-border-color-extra-light: rgba(255, 255, 255, 0.015);
 }
 
 // 表格暗色微调
@@ -51,16 +56,44 @@ html.dark {
 }
 
 // 主按钮（el-button type="primary"）特殊处理：银白底炭黑字
+// 主按钮（el-button type="primary"）特殊处理：浅银底炭黑字
 .el-button--primary {
   --el-button-text-color: #0A0A0B;
-  --el-button-bg-color: #F4F5F7;
-  --el-button-border-color: #F4F5F7;
+  --el-button-bg-color: #CBD5E1;
+  --el-button-border-color: #CBD5E1;
   --el-button-hover-text-color: #0A0A0B;
-  --el-button-hover-bg-color: #FFFFFF;
-  --el-button-hover-border-color: #FFFFFF;
-  --el-button-active-bg-color: #E5E7EB;
-  --el-button-active-border-color: #E5E7EB;
+  --el-button-hover-bg-color: #E5E7EB;
+  --el-button-hover-border-color: #E5E7EB;
+  --el-button-active-bg-color: #94A3B8;
+  --el-button-active-border-color: #94A3B8;
   --el-button-disabled-text-color: rgba(10, 10, 11, 0.42);
   --el-button-disabled-bg-color: rgba(244, 245, 247, 0.52);
   --el-button-disabled-border-color: rgba(244, 245, 247, 0.12);
+}
+
+/* ========== 文本按钮 hover：不要默认天蓝 ========== */
+.el-button.is-text:not(.is-disabled):hover,
+.el-button.is-text:not(.is-disabled):focus {
+  color: #F4F5F7;
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* ========== 链接按钮 hover：用香槟金提示可交互 ========== */
+.el-button.is-link:not(.is-disabled):hover,
+.el-button.is-link:not(.is-disabled):focus {
+  color: #C8A862;
+}
+
+/* ========== 默认按钮（无 type 或 type="default"）hover ========== */
+.el-button:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger):not(.is-disabled):hover {
+  color: #F4F5F7;
+  border-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* ========== "刷新"等带 type="info" 或 plain 按钮的 hover ========== */
+.el-button--info:not(.is-disabled):hover {
+  color: #F4F5F7;
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
 }

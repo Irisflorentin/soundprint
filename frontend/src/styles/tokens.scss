@@ -3,8 +3,8 @@
   --color-bg-base:    #0A0A0B;
   --color-bg-card:    #15151A;
   --color-bg-hover:   #1F1F26;
-  --color-border:     rgba(255, 255, 255, 0.06);
-  --color-border-hover: rgba(255, 255, 255, 0.12);
+  --color-border:     rgba(255, 255, 255, 0.04);
+  --color-border-hover: rgba(255, 255, 255, 0.08);
 
   // 主色（替换原紫色系）
   // 注意：保留变量名 --color-brand 以避免大规模重命名
@@ -17,8 +17,8 @@
   --color-fg-tertiary:  #64748B;
 
   // 状态色（哑光化）
-  --color-success:    #A3D9B1;
-  --color-success-bg: rgba(163, 217, 177, 0.12);
+  --color-success:    #C8A862;
+  --color-success-bg: rgba(200, 168, 98, 0.12);
   --color-warning:    #C8A862;
   --color-warning-bg: rgba(200, 168, 98, 0.12);
   --color-danger:     #E89090;

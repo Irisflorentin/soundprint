@@ -108,6 +108,8 @@ function isActive(path: string) {
   &.active {
     position: relative;
     background: transparent;
+    border: none;
+    box-shadow: none;
     color: var(--color-fg-primary);
     font-weight: 600;
 
@@ -120,6 +122,11 @@ function isActive(path: string) {
       width: 2px;
       border-radius: 2px;
       background: #C8A862;
+    }
+
+    .el-icon,
+    svg {
+      color: var(--color-fg-primary);
     }
   }
 }
