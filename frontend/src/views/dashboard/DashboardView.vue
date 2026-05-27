@@ -71,9 +71,7 @@ onMounted(loadDashboard);
           :rotation-speed="0.03"
         />
         <div class="hero-copy">
-          <p class="eyebrow">Soundprint Library</p>
           <h2>{{ dashboard.greeting || '欢迎回来' }}</h2>
-          <p>从最近添加、播放历史和收藏中继续探索你的无损音乐库。</p>
         </div>
       </section>
 
@@ -246,25 +244,11 @@ onMounted(loadDashboard);
   z-index: 10;
   max-width: 680px;
 
-  .eyebrow {
-    margin: 0 0 var(--space-2);
-    color: #94A3B8;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-
   h2 {
     margin: 0;
     color: #E5E7EB;
     font-size: 34px;
     font-weight: 800;
-  }
-
-  p:last-child {
-    margin: var(--space-3) 0 0;
-    color: #94A3B8;
-    font-size: 15px;
   }
 }
 

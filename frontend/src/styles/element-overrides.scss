@@ -55,7 +55,6 @@ html.dark {
   --el-pagination-button-disabled-bg-color: transparent;
 }
 
-// 主按钮（el-button type="primary"）特殊处理：银白底炭黑字
 // 主按钮（el-button type="primary"）特殊处理：浅银底炭黑字
 .el-button--primary {
   --el-button-text-color: #0A0A0B;
@@ -96,4 +95,54 @@ html.dark {
   color: #F4F5F7;
   background-color: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ========== 成功提示：黑银底 + 香槟金，不使用默认绿色 ========== */
+.el-message--success {
+  --el-message-bg-color: rgba(21, 21, 26, 0.96);
+  --el-message-border-color: rgba(200, 168, 98, 0.32);
+  --el-message-text-color: #C8A862;
+  background-color: rgba(21, 21, 26, 0.96);
+  border-color: rgba(200, 168, 98, 0.32);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.38);
+}
+
+.el-message--success .el-message__content,
+.el-message--success .el-message__icon {
+  color: #C8A862;
+}
+
+/* ========== 进度条：上传/转换统一香槟金，不使用默认蓝 ========== */
+.el-progress {
+  --el-color-primary: #C8A862;
+  --el-color-success: #C8A862;
+}
+
+.el-progress-bar__outer {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.el-progress-bar__inner {
+  background-color: #C8A862;
+  background-image: linear-gradient(90deg, #F7F4EA 0%, #D6B86F 48%, #C8A862 100%);
+}
+
+.el-progress.is-striped .el-progress-bar__inner {
+  background-image:
+    linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.16) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgba(255, 255, 255, 0.16) 50%,
+      rgba(255, 255, 255, 0.16) 75%,
+      transparent 75%,
+      transparent
+    ),
+    linear-gradient(90deg, #F7F4EA 0%, #D6B86F 48%, #C8A862 100%);
+  background-size: 18px 18px, 100% 100%;
+}
+
+.el-progress__text {
+  color: #E5E7EB;
 }
